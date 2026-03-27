@@ -3,7 +3,6 @@ import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } fro
 /* ── Detect device info ── */
 const getDeviceInfo = () => {
   const ua = navigator.userAgent;
-  const platform = navigator.platform || "";
 
   // Device type
   const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
