@@ -1,24 +1,15 @@
-const CACHE_NAME = "juimart-v1";
-const STATIC_ASSETS = [
-  "/",
-  "/index.html",
-  "/static/js/main.chunk.js",
-  "/static/js/bundle.js",
-  "/manifest.json",
-  "/favicon.ico",
-  "/logo192.png",
-  "/logo512.png"
-];
+const CACHE_NAME = "juimart-v2";
+const SHELL = ["/", "/index.html", "/manifest.json", "/favicon.ico", "/logo192.png", "/logo512.png"];
 
-// Install — cache static shell
+// Install
 self.addEventListener("install", (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS).catch(() => {}))
+    caches.open(CACHE_NAME).then((c) => c.addAll(SHELL).catch(() => {}))
   );
   self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — purge old caches
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
@@ -28,28 +19,32 @@ self.addEventListener("activate", (e) => {
   self.clients.claim();
 });
 
-// Fetch — network first, fallback to cache
+// Fetch — network first, cache fallback
+// iOS Safari fix: only cache same-origin GET requests with basic/default response type
 self.addEventListener("fetch", (e) => {
-  // Skip non-GET and Firebase/external requests
-  if (e.request.method !== "GET") return;
-  const url = new URL(e.request.url);
-  if (url.origin !== location.origin) return;
+  const req = e.request;
+
+  // Only handle GET, same-origin, non-chrome-extension
+  if (req.method !== "GET") return;
+  if (!req.url.startsWith(self.location.origin)) return;
 
   e.respondWith(
-    fetch(e.request)
+    fetch(req)
       .then((res) => {
-        // Cache fresh responses
-        if (res && res.status === 200) {
+        // iOS Safari: only cache opaque-safe responses
+        if (res && res.status === 200 && res.type === "basic") {
           const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+          caches.open(CACHE_NAME).then((c) => c.put(req, clone));
         }
         return res;
       })
-      .catch(() => caches.match(e.request).then((cached) => cached || caches.match("/index.html")))
+      .catch(() =>
+        caches.match(req).then((cached) => cached || caches.match("/index.html"))
+      )
   );
 });
 
-// Push notifications
+// Push notifications (Android Chrome + desktop; iOS 16.4+ in standalone)
 self.addEventListener("push", (e) => {
   const data = e.data?.json() || {};
   e.waitUntil(
