@@ -1,0 +1,44 @@
+.meetSection {
+  background-image: url('../../assets/founder_bg.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 80px 20px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.content {
+  width: 100%;
+  max-width: 960px;
+}
+
+.heading {
+  font-size: 1.9rem;
+  color: #3a3737;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.text {
+  font-size: 1.1rem;
+  color: #333;
+  line-height: 1.7;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .text {
+    font-size: 0.9rem;
+  }
+}
+
+.highlight {
+  color: #d28c24;
+  font-weight: bold;
+}

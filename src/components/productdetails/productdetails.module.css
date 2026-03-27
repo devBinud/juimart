@@ -1,0 +1,182 @@
+.productContainer {
+    margin-top: 40px;
+    font-family: 'Inter', sans-serif;
+}
+
+.gallery {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mainImageWrapper {
+    width: 100%;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.mainImage {
+    width: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.thumbnailRow {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border 0.3s ease;
+}
+
+.thumbnail:hover {
+    border-color: #ccc;
+}
+
+.active {
+    border-color: #d25c8e;
+}
+
+.details {
+    padding: 10px 15px;
+}
+
+.title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333333;
+}
+
+.rating {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.priceBlock {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.newPrice {
+    color: #333333;
+    margin-right: 10px;
+}
+
+.oldPrice {
+    text-decoration: line-through;
+    color: #888;
+    font-size: 1.1rem;
+    font-weight: normal;
+}
+
+.features {
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    line-height: 1.6;
+    font-family: 'Montserrat', sans-serif;
+    color: #555;
+}
+
+.featuresTag {
+    background-color: #ecac8a;
+    color: #b76538;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    font-weight: 600;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding: 0 15px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.featuresTag p {
+    margin: 0;
+    color:#443c3c;
+}
+
+.icons {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.icons div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Montserrat', sans-serif;
+    color: #6a4e3a;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 10px 12px;
+    border-radius: 8px;
+    /* box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); */
+    transition: all 0.3s ease;
+}
+
+.icons img {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 7px;
+    opacity: 0.8;
+}
+
+.description {
+    font-size: 0.95rem;
+    color: #444;
+    margin-bottom: 24px;
+}
+
+.whatsappBtn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    /* background-color: #25D366; */
+    background-color:rgb(76, 100, 55);
+    /* WhatsApp green */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 20px;
+    transition: background 0.3s ease;
+}
+
+.whatsappBtn:hover {
+    background-color: rgb(59, 77, 43);
+}
+
+@media (max-width: 768px) {
+    .icons {
+        justify-content: center;
+    }
+
+    .details {
+        text-align: center;
+    }
+}

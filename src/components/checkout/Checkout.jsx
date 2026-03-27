@@ -1,0 +1,502 @@
+import { useState, useEffect } from "react";
+import styles from "./checkout.module.css";
+import { useCartStore } from "../../store/useCartStore";
+import { useNavigate } from "react-router-dom";
+import { saveOrder, listenOrder } from "../../firebase/orderService";
+import { FiMapPin, FiNavigation, FiLoader, FiUser, FiHome } from "react-icons/fi";
+
+/* ── helpers ── */
+const isValidIndianPhone = (p) => /^[6-9]\d{9}$/.test(p.replace(/\s/g, ""));
+
+const reverseGeocode = async (lat, lng) => {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+    );
+    const data = await res.json();
+    const a = data.address || {};
+    const parts = [
+      a.road || a.pedestrian || a.footway,
+      a.neighbourhood || a.suburb,
+      a.city || a.town || a.village || a.county,
+      a.state,
+      a.postcode,
+    ].filter(Boolean);
+    return parts.join(", ");
+  } catch {
+    return "";
+  }
+};
+
+const Checkout = () => {
+  const cart = useCartStore((s) => s.cart);
+  const totalPrice = useCartStore((s) => s.totalPrice());
+  const clearCart = useCartStore((s) => s.clearCart);
+  const navigate = useNavigate();
+
+  const FREE_DELIVERY_THRESHOLD = 100;
+  const DELIVERY_FEE = 25;
+  const subtotal = totalPrice;
+  const hasItems = cart.length > 0;
+  const isFreeDelivery = hasItems && subtotal >= FREE_DELIVERY_THRESHOLD;
+  const deliveryCharge = !hasItems || isFreeDelivery ? 0 : DELIVERY_FEE;
+  const total = subtotal + deliveryCharge;
+
+  const [form, setForm] = useState({
+    name: "", phone: "", address: "",
+    payment: "cod", paid: false, proof: null,
+  });
+  const [errors, setErrors] = useState({});
+  const [uploading, setUploading] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const [locLoading, setLocLoading] = useState(false);
+  const [locError, setLocError] = useState("");
+
+  const [onlineStatus, setOnlineStatus] = useState("idle");
+  const [pendingOrderId, setPendingOrderId] = useState(null);
+  const [waitTimer, setWaitTimer] = useState(60);
+
+  useEffect(() => { if (cart.length === 0) navigate("/"); }, [cart, navigate]);
+
+  useEffect(() => {
+    if (!pendingOrderId) return;
+    const unsub = listenOrder(pendingOrderId, (order) => {
+      if (!order) return;
+      if (order.paymentStatus === "verified") setOnlineStatus("verified");
+      else if (order.paymentStatus === "rejected") setOnlineStatus("rejected");
+    });
+    return () => unsub();
+  }, [pendingOrderId]);
+
+  useEffect(() => {
+    if (onlineStatus !== "submitted") return;
+    setWaitTimer(60);
+    const iv = setInterval(() => setWaitTimer((p) => (p > 0 ? p - 1 : 0)), 1000);
+    return () => clearInterval(iv);
+  }, [onlineStatus]);
+
+  /* ── Location detect ── */
+  const handleDetectLocation = () => {
+    setLocError("");
+    if (!navigator.geolocation) {
+      setLocError("Geolocation is not supported by your browser.");
+      return;
+    }
+    setLocLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const addr = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        if (addr) {
+          setForm((f) => ({ ...f, address: addr }));
+          setErrors((e) => ({ ...e, address: "" }));
+        } else {
+          setLocError("Could not fetch address. Please type manually.");
+        }
+        setLocLoading(false);
+      },
+      (err) => {
+        setLocLoading(false);
+        if (err.code === 1) setLocError("Location permission denied. Please type your address.");
+        else setLocError("Could not get location. Please type manually.");
+      },
+      { timeout: 10000 }
+    );
+  };
+
+  /* ── Validation ── */
+  const validate = () => {
+    const err = {};
+    const name = form.name.trim();
+    const phone = form.phone.trim();
+    const address = form.address.trim();
+
+    if (!name) err.name = "Full name is required";
+    else if (name.length < 2) err.name = "Enter a valid name";
+
+    if (!phone) err.phone = "Phone number is required";
+    else if (!isValidIndianPhone(phone)) err.phone = "Enter a valid 10-digit Indian mobile number";
+
+    if (!address) err.address = "Delivery address is required";
+    else if (address.length < 10) err.address = "Please enter a complete address (min 10 chars)";
+
+    setErrors(err);
+    return Object.keys(err).length === 0;
+  };
+
+  const buildOrder = (extra = {}) => ({
+    id: "ORD" + Date.now(),
+    items: cart,
+    subtotal,
+    delivery: deliveryCharge,
+    total,
+    customer: {
+      name: form.name.trim(),
+      phone: "+91" + form.phone.trim(),
+      address: form.address.trim(),
+    },
+    date: new Date().toLocaleString(),
+    createdAt: Date.now(),
+    ...extra,
+  });
+
+  const handlePlaceOrder = async () => {
+    if (placing) return;
+    if (!validate()) return;
+    setPlacing(true);
+    const orderData = buildOrder({
+      paymentMethod: form.payment === "cod" ? "cod" : "online",
+      paymentStatus: form.payment === "cod" ? "cod" : "verified",
+      orderStatus: "confirmed",
+    });
+    try {
+      const key = await saveOrder(orderData);
+      localStorage.setItem("latest-order", JSON.stringify({ ...orderData, firebaseKey: key }));
+    } catch {
+      localStorage.setItem("latest-order", JSON.stringify(orderData));
+    }
+    clearCart();
+    navigate("/order-success");
+  };
+
+  const handleRetryPayment = () => {
+    setOnlineStatus("idle");
+    setPendingOrderId(null);
+    setForm((f) => ({ ...f, paid: false, proof: null }));
+  };
+
+  const timerColor = waitTimer > 30 ? "#22c55e" : waitTimer > 10 ? "#f59e0b" : "#ef4444";
+
+  const renderButton = () => {
+    if (form.payment === "cod") return (
+      <button className={styles.btn} onClick={handlePlaceOrder} disabled={placing}
+        style={{ opacity: placing ? 0.6 : 1 }}>
+        {placing ? "Placing Order..." : "Place Order"}
+      </button>
+    );
+    if (onlineStatus === "idle") return (
+      <button className={styles.btn} disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
+        Complete Payment Steps Above
+      </button>
+    );
+    if (onlineStatus === "submitted") return (
+      <button className={styles.btn} disabled style={{ opacity: 0.6, background: "#94a3b8" }}>
+        ⏳ Awaiting Admin Verification...
+      </button>
+    );
+    if (onlineStatus === "verified") return (
+      <button className={styles.btn} onClick={handlePlaceOrder} disabled={placing}
+        style={{ background: "#22c55e", opacity: placing ? 0.6 : 1 }}>
+        {placing ? "Placing Order..." : "✅ Payment Verified — Place Order"}
+      </button>
+    );
+    if (onlineStatus === "rejected") return (
+      <button className={styles.btn} onClick={handleRetryPayment} style={{ background: "#ef4444" }}>
+        🔄 Retry Payment
+      </button>
+    );
+  };
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.wrapper}>
+        <h2 className={styles.title}>Checkout</h2>
+        <div className={styles.layout}>
+
+          {/* ── LEFT ── */}
+          <div className={styles.left}>
+
+            {/* DELIVERY DETAILS */}
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>📦 Delivery Details</h3>
+
+              {/* Name */}
+              <div className={styles.field}>
+                <label>Full Name</label>
+                <div style={inputWrap}>
+                  <FiUser style={inputIcon} />
+                  <input
+                    className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
+                    style={{ paddingLeft: 38 }}
+                    placeholder="Rahul Sharma"
+                    value={form.name}
+                    onChange={(e) => {
+                      setForm({ ...form, name: e.target.value });
+                      if (errors.name) setErrors({ ...errors, name: "" });
+                    }}
+                  />
+                </div>
+                {errors.name && <span className={styles.error}>{errors.name}</span>}
+              </div>
+
+              {/* Phone with +91 */}
+              <div className={styles.field}>
+                <label>Phone Number</label>
+                <div style={inputWrap}>
+                  <div style={prefixBox}>
+                    <span style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1 }}>🇮🇳</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>+91</span>
+                  </div>
+                  <input
+                    className={`${styles.input} ${errors.phone ? styles.inputError : ""}`}
+                    style={{ paddingLeft: 72, borderRadius: 10 }}
+                    placeholder="98765 43210"
+                    maxLength={10}
+                    value={form.phone}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setForm({ ...form, phone: val });
+                      if (errors.phone) setErrors({ ...errors, phone: "" });
+                    }}
+                  />
+                </div>
+                {errors.phone
+                  ? <span className={styles.error}>{errors.phone}</span>
+                  : form.phone.length === 10 && isValidIndianPhone(form.phone)
+                    ? <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 600 }}>✓ Valid number</span>
+                    : form.phone.length > 0
+                      ? <span style={{ fontSize: 12, color: "#94a3b8" }}>{10 - form.phone.length} digits remaining</span>
+                      : null
+                }
+              </div>
+
+              {/* Address with location detect */}
+              <div className={styles.field}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <label style={{ margin: 0 }}>Delivery Address</label>
+                  <button
+                    type="button"
+                    onClick={handleDetectLocation}
+                    disabled={locLoading}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 5,
+                      background: locLoading ? "#f1f5f9" : "#f0fdf4",
+                      border: "1.5px solid #bbf7d0",
+                      color: "#16a34a", borderRadius: 8,
+                      padding: "5px 10px", fontSize: 12, fontWeight: 700,
+                      cursor: locLoading ? "not-allowed" : "pointer",
+                      fontFamily: "'Outfit', sans-serif",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {locLoading
+                      ? <><FiLoader size={12} style={{ animation: "spin 1s linear infinite" }} /> Detecting...</>
+                      : <><FiNavigation size={12} /> Use My Location</>
+                    }
+                  </button>
+                </div>
+                <div style={{ position: "relative" }}>
+                  <FiHome style={{ ...inputIcon, top: 14, transform: "none" }} />
+                  <textarea
+                    className={`${styles.input} ${errors.address ? styles.inputError : ""}`}
+                    style={{ paddingLeft: 38, minHeight: 90, resize: "vertical" }}
+                    placeholder="House No, Street, Landmark, City, Pincode"
+                    value={form.address}
+                    onChange={(e) => {
+                      setForm({ ...form, address: e.target.value });
+                      if (errors.address) setErrors({ ...errors, address: "" });
+                      if (locError) setLocError("");
+                    }}
+                  />
+                </div>
+                {locError && (
+                  <span style={{ fontSize: 12, color: "#f59e0b", fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}>
+                    <FiMapPin size={11} /> {locError}
+                  </span>
+                )}
+                {errors.address && <span className={styles.error}>{errors.address}</span>}
+                {!errors.address && form.address.length > 0 && (
+                  <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 600 }}>
+                    ✓ Address looks good
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* PAYMENT METHOD */}
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>💳 Payment Method</h3>
+
+              <div
+                className={`${styles.payOption} ${form.payment === "online" ? styles.active : ""}`}
+                onClick={() => { if (onlineStatus === "idle") setForm({ ...form, payment: "online" }); }}
+              >
+                <div className={styles.radio}></div>
+                <div>
+                  <p>Pay Online (UPI / Card)</p>
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>Scan QR & upload screenshot</span>
+                </div>
+              </div>
+
+              <div
+                className={`${styles.payOption} ${form.payment === "cod" ? styles.active : ""}`}
+                onClick={() => { if (onlineStatus === "idle") setForm({ ...form, payment: "cod", paid: false, proof: null }); }}
+              >
+                <div className={styles.radio}></div>
+                <div>
+                  <p>Cash on Delivery</p>
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>Pay when you receive</span>
+                </div>
+              </div>
+
+              {/* ONLINE: QR + Upload */}
+              {form.payment === "online" && onlineStatus === "idle" && (
+                <div style={{ marginTop: 20, padding: 16, background: "#f8fafc", borderRadius: 12, border: "1px solid #e2e8f0" }}>
+                  <p style={{ fontWeight: 700, marginBottom: 12, color: "#0f172a" }}>📱 Scan & Pay</p>
+                  <div style={{ textAlign: "center" }}>
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=yourupi@upi&pn=Juimart&am=${total}&cu=INR`}
+                      alt="QR Code"
+                      style={{ width: 160, borderRadius: 10, border: "1px solid #e2e8f0" }}
+                    />
+                    <p style={{ marginTop: 8, fontSize: 13, color: "#64748b" }}>UPI ID: <b style={{ color: "#0f172a" }}>yourupi@upi</b></p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "#22c55e" }}>Amount: ₹{total}</p>
+                  </div>
+                  <div style={{ marginTop: 16 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
+                      Upload Payment Screenshot <span style={{ color: "#ef4444" }}>*</span>
+                    </p>
+                    <input type="file" accept="image/*" style={{ fontSize: 13 }}
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        setUploading(true);
+                        const reader = new FileReader();
+                        reader.onloadend = () => { setForm((p) => ({ ...p, proof: reader.result })); setUploading(false); };
+                        reader.readAsDataURL(file);
+                      }}
+                    />
+                    {uploading && <p style={{ fontSize: 13, color: "#64748b", marginTop: 6 }}>⏳ Processing...</p>}
+                    {form.proof && (
+                      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
+                        <img src={form.proof} alt="proof" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, border: "2px solid #22c55e" }} />
+                        <span style={{ fontSize: 13, color: "#22c55e", fontWeight: 600 }}>✅ Screenshot uploaded</span>
+                      </div>
+                    )}
+                  </div>
+                  <label style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    marginTop: 14, padding: 12, borderRadius: 8,
+                    background: form.proof ? "#f0fdf4" : "#f8fafc",
+                    border: `1px solid ${form.proof ? "#86efac" : "#e2e8f0"}`,
+                    opacity: form.proof ? 1 : 0.5,
+                    cursor: form.proof ? "pointer" : "not-allowed",
+                  }}>
+                    <input type="checkbox" checked={form.paid} disabled={!form.proof}
+                      style={{ width: 16, height: 16, accentColor: "#22c55e" }}
+                      onChange={async (e) => {
+                        const checked = e.target.checked;
+                        setForm({ ...form, paid: checked });
+                        if (checked) {
+                          if (!validate()) return;
+                          const orderData = buildOrder({
+                            paymentMethod: "online",
+                            paymentStatus: "pending_verification",
+                            paymentProof: form.proof,
+                            orderStatus: "pending",
+                          });
+                          try {
+                            const key = await saveOrder(orderData);
+                            localStorage.setItem("latest-order", JSON.stringify({ ...orderData, firebaseKey: key }));
+                            setPendingOrderId(key);
+                          } catch {
+                            localStorage.setItem("latest-order", JSON.stringify(orderData));
+                          }
+                          setOnlineStatus("submitted");
+                        }
+                      }}
+                    />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>I have completed the payment</span>
+                    {!form.proof && <span style={{ fontSize: 11, color: "#ef4444" }}>(upload screenshot first)</span>}
+                  </label>
+                </div>
+              )}
+
+              {/* WAITING */}
+              {form.payment === "online" && onlineStatus === "submitted" && (
+                <div style={{ marginTop: 20, textAlign: "center", padding: "24px 20px", background: "#fffbeb", borderRadius: 12, border: "1px solid #fcd34d" }}>
+                  <p style={{ fontSize: 32, marginBottom: 8 }}>⏳</p>
+                  <p style={{ fontWeight: 700, fontSize: 16, color: "#92400e" }}>Waiting for admin verification</p>
+                  <p style={{ fontSize: 13, color: "#b45309", marginTop: 4, marginBottom: 20 }}>Your screenshot has been submitted.</p>
+                  <div style={{ fontSize: 48, fontWeight: 800, color: timerColor, fontFamily: "'Outfit', sans-serif", lineHeight: 1 }}>{waitTimer}</div>
+                  <p style={{ fontSize: 12, color: "#92400e", marginBottom: 12 }}>seconds remaining</p>
+                  <div style={{ height: 8, background: "#fde68a", borderRadius: 10, overflow: "hidden", marginBottom: 12 }}>
+                    <div style={{ width: `${(waitTimer / 60) * 100}%`, height: "100%", background: timerColor, borderRadius: 10, transition: "width 1s linear, background 0.5s" }} />
+                  </div>
+                  {waitTimer === 0 && <p style={{ fontSize: 13, color: "#ef4444", fontWeight: 600 }}>📞 Contact: <b>+91 9101038129</b></p>}
+                  <p style={{ fontSize: 11, color: "#9ca3af", marginTop: 10 }}>This page updates automatically</p>
+                </div>
+              )}
+
+              {/* VERIFIED */}
+              {form.payment === "online" && onlineStatus === "verified" && (
+                <div style={{ marginTop: 20, textAlign: "center", padding: 20, background: "#f0fdf4", borderRadius: 12, border: "1px solid #86efac" }}>
+                  <p style={{ fontSize: 32, marginBottom: 8 }}>✅</p>
+                  <p style={{ fontWeight: 700, fontSize: 16, color: "#15803d" }}>Payment Verified!</p>
+                  <p style={{ fontSize: 13, color: "#166534", marginTop: 4 }}>Admin confirmed your payment. Click below to place your order.</p>
+                </div>
+              )}
+
+              {/* REJECTED */}
+              {form.payment === "online" && onlineStatus === "rejected" && (
+                <div style={{ marginTop: 20, textAlign: "center", padding: 20, background: "#fef2f2", borderRadius: 12, border: "1px solid #fecaca" }}>
+                  <p style={{ fontSize: 32, marginBottom: 8 }}>❌</p>
+                  <p style={{ fontWeight: 700, fontSize: 16, color: "#dc2626" }}>Payment Rejected</p>
+                  <p style={{ fontSize: 13, color: "#b91c1c", marginTop: 4, marginBottom: 12 }}>Please retry with a clear screenshot.</p>
+                  <p style={{ fontSize: 13, color: "#6b7280" }}>Need help? Call: <b style={{ color: "#0f172a" }}>+91 9101038129</b></p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── RIGHT — ORDER SUMMARY ── */}
+          <div className={styles.right}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>🧾 Order Summary</h3>
+              {cart.map((item) => (
+                <div key={item.id} className={styles.item}>
+                  <div className={styles.itemLeft}>
+                    <img src={item.image} alt={item.name} className={styles.itemImg} />
+                    <div>
+                      <p>{item.name}</p>
+                      <span>Qty: {item.quantity}</span>
+                    </div>
+                  </div>
+                  <p>₹{item.price * item.quantity}</p>
+                </div>
+              ))}
+              <div className={styles.divider}></div>
+              <div className={styles.row}><span>Subtotal</span><span>₹{subtotal}</span></div>
+              {hasItems && (
+                <div className={styles.row}>
+                  <span>Delivery Fee</span>
+                  <span>{isFreeDelivery ? <span style={{ color: "#22c55e", fontWeight: 600 }}>FREE</span> : `₹${DELIVERY_FEE}`}</span>
+                </div>
+              )}
+              <div className={styles.total}><span>Total to Pay</span><span>₹{total}</span></div>
+              {renderButton()}
+              <p className={styles.secure}>🔒 Secure checkout by Juimart</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+};
+
+/* ── inline style helpers ── */
+const inputWrap = { position: "relative" };
+const inputIcon = {
+  position: "absolute", left: 12, top: "50%",
+  transform: "translateY(-50%)", color: "#94a3b8", pointerEvents: "none",
+};
+const prefixBox = {
+  position: "absolute", left: 0, top: 0, bottom: 0,
+  width: 64, display: "flex", flexDirection: "column",
+  alignItems: "center", justifyContent: "center",
+  borderRight: "1.5px solid #e2e8f0", gap: 1,
+  pointerEvents: "none",
+};
+
+export default Checkout;

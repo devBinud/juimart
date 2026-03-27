@@ -1,0 +1,241 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.sidebar {
+    width: 240px;
+    background: #111;
+    padding: 30px 20px;
+    color: #fff;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 40px;
+}
+
+.navList {
+    list-style: none;
+    padding: 0;
+}
+
+.navList li {
+    margin-bottom: 20px;
+}
+
+.navList a {
+    color: #ccc;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+
+.addProduct_title {
+    color: #272727;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 30px
+}
+
+.navList a:hover {
+    color: #fff;
+}
+
+.main {
+    flex: 1;
+    padding: 40px;
+    background-color: #f7f7f7;
+}
+
+.heading {
+    font-size: 28px;
+    margin-bottom: 30px;
+}
+
+.form {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(210, 140, 36, 0.3);
+}
+
+.formGroup {
+    margin-bottom: 20px;
+}
+
+.admin_dashboard .nav-link {
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif !important;
+}
+
+.formGroup label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif !important;
+
+}
+
+.formGroup input,
+.formGroup textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+    border-color: #d28c24;
+}
+
+.formGroupRow {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.formGroupRow>div {
+    flex: 1;
+}
+
+.preview {
+    margin-top: 15px;
+    max-height: 200px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.active {
+    font-weight: bold;
+    color: #d28c24;
+    border-left: 4px solid #d28c24;
+    background-color: #f5f5f5;
+}
+
+.submitBtn {
+    background-color: #d28c24;
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: 0.3s ease;
+}
+
+.imageUploadBox {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    border-radius: 6px;
+}
+
+.imageUploadBox label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #333;
+}
+
+.uploadButton {
+    background-color: #d28c24;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    font-size: 15px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.uploadButton:hover {
+    background-color: #b6761e;
+}
+
+.imagePreviewWrapper {
+    margin-top: 15px;
+    max-width: 180px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.imagePreview {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.submitBtn:hover {
+    background-color: #b9771f;
+    cursor: pointer;
+}
+
+.saveButton {
+    background-color: #b9771f;
+    cursor: pointer;
+    width: 100%;
+    color: #fff;
+    font-weight: 600;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.saveButton:hover {
+    background-color: #a76618;
+}
+
+.allProduct_container {
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    padding: 30px 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.allProduct_heading {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.allProduct_img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+
+.fuckcoloumn {
+    margin-left: -10px !important;
+    background-color: blue !important;
+}
+
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+
+    .allProduct_main {
+        width: 100% !important;
+    }
+}

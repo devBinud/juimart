@@ -1,0 +1,146 @@
+.aboutSection {
+  width: 100%;
+  padding: 30px 20px;
+  /* background: linear-gradient(145deg, #fdf6ec, #e9d8c5, #f5e4d0); */
+  font-family: 'Georgia', 'Times New Roman', serif;
+    border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.textSection {
+  flex: 1;
+  min-width: 300px;
+}
+
+.heading {
+  font-size: 2.3rem;
+  font-weight: bold;
+  background: linear-gradient(90deg, #8d4a23, #e6943b);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .heading {
+    font-size: 1.6rem;
+  }
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  color: #6b4c3b;
+  font-weight: 500;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 768px) {
+  .subtitle {
+    font-size: 1.15rem;
+  }
+}
+
+.description {
+  font-size: 1.1rem;
+  color: #4b4b4b;
+  line-height: 1.5;
+  font-family: 'Montserrat, sans-serif';
+  margin-bottom: 20px;
+  max-width: 700px;
+}
+
+.highlightedSection p {
+  line-height: 22px;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+
+  .description,
+  .highlightedSection p {
+    font-size: 0.9rem;
+  }
+}
+
+.bulletList {
+  padding-left: 20px;
+  margin-bottom: 24px;
+}
+
+.bulletList li {
+  font-size: 1.15rem;
+  color: #444;
+  margin-bottom: 12px;
+  line-height: 1.7;
+  list-style-type: disc;
+}
+
+.imageSection {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.highlightedSection {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.2rem;
+  line-height: 1.9;
+  color: #333;
+  max-width: 700px;
+}
+
+
+
+.highlight {
+  color: #4c6437;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: 0.2px;
+}
+
+
+.tagline {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #c44924, #c07a2d, #c44924);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.6;
+  letter-spacing: 0px;
+  margin-bottom: 12px;
+}
+
+
+.brandName {
+  font-weight: 700;
+  color: #a7572c;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}

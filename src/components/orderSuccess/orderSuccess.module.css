@@ -1,0 +1,157 @@
+/* 🌱 MOBILE FIRST */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f0fff4, #e6fffa);
+}
+
+.card {
+  width: 100%;
+  max-width: 100%;
+  background: #fff;
+  padding: 2rem 1.2rem;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+/* ✅ ICON */
+.iconWrapper {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 1.2rem;
+  border-radius: 50%;
+  background: #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pop 0.4s ease;
+}
+
+.checkmark {
+  width: 26px;
+  height: 14px;
+  border-left: 4px solid #10b981;
+  border-bottom: 4px solid #10b981;
+  transform: rotate(-45deg);
+}
+
+/* ✅ TEXT */
+.title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.2rem;
+  line-height: 1.4;
+}
+
+/* ✅ INFO BOX */
+.infoBox {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 0.9rem;
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+/* ✅ BUTTONS (STACKED ON MOBILE) */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.primaryBtn {
+  width: 100%;
+  background: #10b981;
+  color: #fff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.secondaryBtn {
+  width: 100%;
+  background: #f3f4f6;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+/* ✨ TABLET */
+@media (min-width: 640px) {
+  .card {
+    max-width: 420px;
+    padding: 2.5rem 2rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
+
+  .primaryBtn,
+  .secondaryBtn {
+    flex: 1;
+  }
+}
+
+/* 💻 DESKTOP */
+@media (min-width: 1024px) {
+  .page {
+    padding: 2rem;
+  }
+
+  .card {
+    max-width: 480px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+  }
+
+  .iconWrapper {
+    width: 80px;
+    height: 80px;
+  }
+
+  .title {
+    font-size: 1.7rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+}
+
+/* 🎬 ANIMATION */
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

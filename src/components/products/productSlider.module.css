@@ -1,0 +1,228 @@
+.sliderContainer {
+  padding: 20px;
+  background: #fefefe;
+}
+
+.titleWrapper {
+  width: 100vw;
+  background: linear-gradient(to right, #ffffff, #b76538 30%, #b76538 70%, #ffffff);
+  margin-bottom: 30px;
+  margin-top: -20px;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+.title {
+  font-size: 1.4rem;
+  margin: 0;
+  text-align: center;
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+  padding: 12px 0;
+}
+
+.productinstruction {
+  font-size: 0.7rem;
+  color: #fff;
+  color: #2e1c1c;
+}
+
+.productinstruction {
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0px 0 13px 0px;
+  font-family: 'Montserrat', sans-serif;
+  color: #f1ecec;
+}
+
+.arrow {
+  margin-left: 8px;
+  animation: bounceRight 1s infinite;
+}
+
+@keyframes bounceRight {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+.clickableBox {
+  text-decoration: none !important;
+}
+
+.clickableBox :global(*) {
+  text-decoration: none !important;
+}
+
+.sliderWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.slider {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 16px;
+  padding: 10px 0;
+  scrollbar-width: none;
+}
+
+.slider::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  min-width: 100px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+
+
+.image {
+  width: 100%;
+  height: 290px;
+  object-fit: cover;
+  padding:8px;
+  border-radius:10px;
+}
+
+.cardBody {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* height: 160px; */
+}
+
+.productName {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin-bottom: 4px;
+  text-decoration: none !important;
+  /* This removes the underline */
+}
+
+.description {
+  font-size: 0.75rem;
+  font-family: 'Montserrat', sans-serif;
+  color: #b76538;
+  font-weight: 600;
+  max-width:250px;
+  margin-bottom: 6px;
+}
+
+.priceBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.discountedPrice {
+  font-weight: bold;
+  color: #2c2c2c;
+}
+
+.originalPrice {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.whatsapp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 10px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  /* background: #1f5132; */
+  background: #1f5132;
+  transition: background 0.3s ease;
+}
+
+.whatsapp:hover {
+  background: #194229;
+}
+
+.arrowLeft,
+.arrowRight {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #fff;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.arrowLeft {
+  left: -10px;
+}
+
+.arrowRight {
+  right: -10px;
+}
+
+@media (min-width: 768px) {
+
+  .arrowLeft,
+  .arrowRight {
+    display: inline-block;
+  }
+}
+
+.loading{
+  text-align:center
+}
+/* ================== MORE RESPONSIVE CODE ========================= */
+
+@media (max-width: 767px) {
+  .card {
+    min-width: 49%;
+    max-width: 49%;
+  }
+
+.image {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+}
+
+}
