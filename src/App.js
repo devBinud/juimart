@@ -1,4 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import './App.css';
 
 import PublicHome from './pages/public/Home.jsx';
@@ -22,12 +23,21 @@ import AllProduct from './pages/admin/AllProduct.jsx';
 import AllOrders from './pages/admin/AllOrders.jsx';
 import Login from './pages/admin/Login.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
+import Analytics from './pages/admin/Analytics.jsx';
 import PWAInstallBanner from './components/PWAInstallBanner.jsx';
+import { logVisit } from './firebase/analyticsService';
 
 const App = () => {
   const location = useLocation();
   const hideHeaderFooter = location.pathname === '/admin/login';
   const hideFooter = location.pathname.startsWith('/admin');
+
+  // Log every page visit
+  useEffect(() => {
+    if (!location.pathname.startsWith('/admin')) {
+      logVisit(location.pathname);
+    }
+  }, [location.pathname]);
 
   return (
     <>
@@ -84,6 +94,15 @@ const App = () => {
           element={
             <PrivateRoute>
               <AllProduct />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/admin/analytics"
+          element={
+            <PrivateRoute>
+              <Analytics />
             </PrivateRoute>
           }
         />

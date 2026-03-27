@@ -87,6 +87,7 @@ const AllOrders = () => {
             { label: '➕ Add Product',     href: '/admin/add-product' },
             { label: '📦 Manage Products', href: '/admin/all-products' },
             { label: '🧾 All Orders',      href: '/admin/all-orders' },
+            { label: '📈 Analytics',       href: '/admin/analytics' },
           ].map((item) => (
             <a key={item.href} href={item.href}
               className={`admin-nav-link ${window.location.pathname === item.href ? 'active' : ''}`}>
