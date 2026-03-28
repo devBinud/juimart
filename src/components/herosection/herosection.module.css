@@ -3,12 +3,10 @@
 
   background:
     linear-gradient(135deg, rgba(40, 180, 99, 0.85), rgba(35, 155, 86, 0.85)),
-    url("https://images.unsplash.com/photo-1542838132-92c53300491e");
-
+    url("../../assets/bg.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
   min-height: 50vh;
   display: flex;
   align-items: center;

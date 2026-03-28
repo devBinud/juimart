@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { getDatabase, ref, push } from 'firebase/database';
+import { AdminPage, PageHeader, Card } from './AdminLayout';
 import './admin.css';
 
-const CATEGORIES = ['Fruits', 'Vegetables', 'Spices', 'Dairy', 'Grains', 'Beverages', 'Snacks', 'Other'];
-
-const NAV_ITEMS = [
-  { label: '📊 Dashboard', href: '/admin/dashboard' },
-  { label: '➕ Add Product', href: '/admin/add-product' },
-  { label: '📦 Manage Products', href: '/admin/all-products' },
-  { label: '🧾 All Orders', href: '/admin/all-orders' },
+const CATEGORIES = [
+  'Fruits & Vegetables', 'Vegetables', 'Dairy & Eggs', 'Grocery',
+  'Snacks', 'Beverages', 'Bakery', 'Meat & Fish', 'Frozen',
+  'Personal Care', 'Beauty', 'Pickles & Achar', 'Local Products',
+  'Spices', 'Cleaning', 'Baby Care', 'Pet Care', 'Stationery', 'Other',
 ];
 
 const AddProduct = () => {
@@ -82,194 +81,79 @@ const AddProduct = () => {
     : 0;
 
   return (
-    <div className="admin-page">
+    <AdminPage>
       {/* TOAST */}
       {toast && (
-        <div style={{
-          position: 'fixed', top: 24, right: 24, zIndex: 9999,
-          background: toast.type === 'error' ? '#fef2f2' : '#f0fdf4',
-          color: toast.type === 'error' ? '#dc2626' : '#15803d',
-          padding: '12px 20px', borderRadius: 12,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-          fontWeight: 600, fontSize: 14,
-          animation: 'slideUp 0.3s ease',
-        }}>
-          {toast.type === 'error' ? '❌' : '✅'} {toast.msg}
+        <div style={{ position:'fixed', top:24, right:24, zIndex:9999, background:toast.type==='error'?'#fef2f2':'#f0fdf4', color:toast.type==='error'?'#dc2626':'#15803d', padding:'12px 20px', borderRadius:12, boxShadow:'0 8px 24px rgba(0,0,0,0.12)', fontWeight:600, fontSize:14 }}>
+          {toast.type==='error'?'❌':'✅'} {toast.msg}
         </div>
       )}
 
-      {/* SIDEBAR */}
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar-logo">🌿 Juimart</div>
-        <nav className="admin-nav">
-          {NAV_ITEMS.map(item => (
-            <a key={item.href} href={item.href}
-              className={`admin-nav-link ${window.location.pathname === item.href ? 'active' : ''}`}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-      </aside>
+      <PageHeader title="Add Product" subtitle="Fill in the details to add a new product"
+        action={<a href="/admin/all-products" style={{ textDecoration:'none' }}><button className="admin-btn admin-btn-blue">📦 View All Products</button></a>}
+      />
 
-      {/* MAIN */}
-      <main className="admin-main">
-        <div className="admin-topbar">
-          <div>
-            <h1 className="admin-heading">Add Product</h1>
-            <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Fill in the details to add a new product</p>
-          </div>
-          <a href="/admin/all-products" style={{ textDecoration: 'none' }}>
-            <button className="admin-btn admin-btn-blue">📦 View All Products</button>
-          </a>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 340px', gap:24, alignItems:'start' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+          <Card>
+            <h3 style={cardTitle}>Basic Information</h3>
+            <div style={grid2}>
+              <Field label="Product Name *"><input style={input} placeholder="e.g. Organic Spinach" value={product.name} onChange={handleNameChange} /></Field>
+              <Field label="Slug (auto-generated)"><input style={{ ...input, background:'#f8fafc', color:'#94a3b8' }} value={product.slug} readOnly /></Field>
+            </div>
+            <Field label="Category *">
+              <select style={input} value={product.category} onChange={e => setProduct(p => ({ ...p, category:e.target.value }))}>
+                <option value="">Select category...</option>
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </Field>
+          </Card>
+          <Card>
+            <h3 style={cardTitle}>Descriptions</h3>
+            <Field label="Short Description *"><textarea style={{ ...input, height:80, resize:'vertical' }} placeholder="Brief product description..." value={product.description} onChange={e => setProduct(p => ({ ...p, description:e.target.value }))} /></Field>
+            <Field label="Additional Info (optional)"><textarea style={{ ...input, height:70, resize:'vertical' }} placeholder="More details..." value={product.longDesc1} onChange={e => setProduct(p => ({ ...p, longDesc1:e.target.value }))} /></Field>
+            <div style={grid2}>
+              <Field label="Extra Info 1"><textarea style={{ ...input, height:60, resize:'vertical' }} value={product.longDesc2} onChange={e => setProduct(p => ({ ...p, longDesc2:e.target.value }))} /></Field>
+              <Field label="Extra Info 2"><textarea style={{ ...input, height:60, resize:'vertical' }} value={product.longDesc3} onChange={e => setProduct(p => ({ ...p, longDesc3:e.target.value }))} /></Field>
+            </div>
+          </Card>
+          <Card>
+            <h3 style={cardTitle}>Pricing</h3>
+            <div style={grid3}>
+              <Field label="MRP (₹) *"><input style={input} type="number" placeholder="0" value={product.mrp} onChange={e => handlePricing('mrp', e.target.value)} /></Field>
+              <Field label="Discount (%)"><input style={input} type="number" placeholder="0" value={product.discount} onChange={e => handlePricing('discount', e.target.value)} /></Field>
+              <Field label="Final Price (₹)"><input style={{ ...input, background:'#f0fdf4', color:'#15803d', fontWeight:700 }} type="number" value={product.price} readOnly /></Field>
+            </div>
+            {product.mrp && product.price && <div style={{ marginTop:10, padding:'10px 14px', background:'#f0fdf4', borderRadius:10, fontSize:13, color:'#15803d', fontWeight:600 }}>💰 Customer saves ₹{product.mrp - product.price} ({discount}% off)</div>}
+          </Card>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
-
-          {/* LEFT — FORM */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-            {/* BASIC INFO */}
-            <div style={card}>
-              <h3 style={cardTitle}>Basic Information</h3>
-              <div style={grid2}>
-                <Field label="Product Name *">
-                  <input style={input} placeholder="e.g. Organic Spinach" value={product.name} onChange={handleNameChange} />
-                </Field>
-                <Field label="Slug (auto-generated)">
-                  <input style={{ ...input, background: '#f8fafc', color: '#94a3b8' }} value={product.slug} readOnly />
-                </Field>
-              </div>
-              <Field label="Category *">
-                <select style={input} value={product.category} onChange={e => setProduct(p => ({ ...p, category: e.target.value }))}>
-                  <option value="">Select category...</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </Field>
+        <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+          <Card>
+            <h3 style={cardTitle}>Product Image</h3>
+            <div onClick={handleUpload} style={{ border:'2px dashed #e2e8f0', borderRadius:14, padding:'32px 20px', textAlign:'center', cursor:'pointer', background:imageUrl?'#f0fdf4':'#f8fafc', minHeight:180, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10 }}>
+              {imageUrl ? (<><img src={imageUrl} alt="preview" style={{ width:'100%', maxHeight:200, objectFit:'cover', borderRadius:10 }} /><p style={{ fontSize:12, color:'#22c55e', fontWeight:600, marginTop:8 }}>✅ Uploaded — click to change</p></>) : (<><div style={{ fontSize:36 }}>🖼️</div><p style={{ fontSize:14, fontWeight:600, color:'#374151' }}>Click to upload image</p><p style={{ fontSize:12, color:'#94a3b8' }}>JPG, PNG, WEBP</p></>)}
             </div>
-
-            {/* DESCRIPTIONS */}
-            <div style={card}>
-              <h3 style={cardTitle}>Descriptions</h3>
-              <Field label="Short Description *">
-                <textarea style={{ ...input, height: 80, resize: 'vertical' }}
-                  placeholder="Brief product description..."
-                  value={product.description}
-                  onChange={e => setProduct(p => ({ ...p, description: e.target.value }))} />
-              </Field>
-              <Field label="Additional Info (optional)">
-                <textarea style={{ ...input, height: 70, resize: 'vertical' }}
-                  placeholder="More details about the product..."
-                  value={product.longDesc1}
-                  onChange={e => setProduct(p => ({ ...p, longDesc1: e.target.value }))} />
-              </Field>
-              <div style={grid2}>
-                <Field label="Extra Info 1 (optional)">
-                  <textarea style={{ ...input, height: 60, resize: 'vertical' }}
-                    value={product.longDesc2}
-                    onChange={e => setProduct(p => ({ ...p, longDesc2: e.target.value }))} />
-                </Field>
-                <Field label="Extra Info 2 (optional)">
-                  <textarea style={{ ...input, height: 60, resize: 'vertical' }}
-                    value={product.longDesc3}
-                    onChange={e => setProduct(p => ({ ...p, longDesc3: e.target.value }))} />
-                </Field>
-              </div>
-            </div>
-
-            {/* PRICING */}
-            <div style={card}>
-              <h3 style={cardTitle}>Pricing</h3>
-              <div style={grid3}>
-                <Field label="MRP (₹) *">
-                  <input style={input} type="number" placeholder="0" value={product.mrp}
-                    onChange={e => handlePricing('mrp', e.target.value)} />
-                </Field>
-                <Field label="Discount (%)">
-                  <input style={input} type="number" placeholder="0" value={product.discount}
-                    onChange={e => handlePricing('discount', e.target.value)} />
-                </Field>
-                <Field label="Final Price (₹)">
-                  <input style={{ ...input, background: '#f0fdf4', color: '#15803d', fontWeight: 700 }}
-                    type="number" value={product.price} readOnly />
-                </Field>
-              </div>
-              {product.mrp && product.price && (
-                <div style={{ marginTop: 10, padding: '10px 14px', background: '#f0fdf4', borderRadius: 10, fontSize: 13, color: '#15803d', fontWeight: 600 }}>
-                  💰 Customer saves ₹{product.mrp - product.price} ({discount}% off)
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* RIGHT — IMAGE + SAVE */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={card}>
-              <h3 style={cardTitle}>Product Image</h3>
-              <div
-                onClick={handleUpload}
-                style={{
-                  border: '2px dashed #e2e8f0',
-                  borderRadius: 14,
-                  padding: '32px 20px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  background: imageUrl ? '#f0fdf4' : '#f8fafc',
-                  transition: 'all 0.2s',
-                  minHeight: 180,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 10,
-                }}
-              >
-                {imageUrl ? (
-                  <>
-                    <img src={imageUrl} alt="preview" style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 10 }} />
-                    <p style={{ fontSize: 12, color: '#22c55e', fontWeight: 600, marginTop: 8 }}>✅ Image uploaded — click to change</p>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ fontSize: 36 }}>🖼️</div>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Click to upload image</p>
-                    <p style={{ fontSize: 12, color: '#94a3b8' }}>JPG, PNG, WEBP supported</p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* PREVIEW CARD */}
-            {(product.name || imageUrl) && (
-              <div style={card}>
-                <h3 style={cardTitle}>Preview</h3>
-                <div style={{ borderRadius: 12, overflow: 'hidden', background: '#f8fafc' }}>
-                  {imageUrl && <img src={imageUrl} alt="preview" style={{ width: '100%', height: 160, objectFit: 'cover' }} />}
-                  <div style={{ padding: '12px 14px' }}>
-                    <p style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', marginBottom: 4 }}>{product.name || 'Product Name'}</p>
-                    {product.category && <p style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>{product.category}</p>}
-                    {product.price && (
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <span style={{ fontWeight: 800, color: '#22c55e', fontSize: 16 }}>₹{product.price}</span>
-                        {product.mrp && <span style={{ fontSize: 12, color: '#94a3b8', textDecoration: 'line-through' }}>₹{product.mrp}</span>}
-                      </div>
-                    )}
-                  </div>
+          </Card>
+          {(product.name || imageUrl) && (
+            <Card>
+              <h3 style={cardTitle}>Preview</h3>
+              <div style={{ borderRadius:12, overflow:'hidden', background:'#f8fafc' }}>
+                {imageUrl && <img src={imageUrl} alt="preview" style={{ width:'100%', height:160, objectFit:'cover' }} />}
+                <div style={{ padding:'12px 14px' }}>
+                  <p style={{ fontWeight:700, fontSize:14, color:'#0f172a', marginBottom:4 }}>{product.name||'Product Name'}</p>
+                  {product.category && <p style={{ fontSize:12, color:'#64748b', marginBottom:6 }}>{product.category}</p>}
+                  {product.price && <div style={{ display:'flex', gap:8, alignItems:'center' }}><span style={{ fontWeight:800, color:'#22c55e', fontSize:16 }}>₹{product.price}</span>{product.mrp && <span style={{ fontSize:12, color:'#94a3b8', textDecoration:'line-through' }}>₹{product.mrp}</span>}</div>}
                 </div>
               </div>
-            )}
-
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="admin-btn admin-btn-green"
-              style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 15, opacity: saving ? 0.7 : 1 }}
-            >
-              {saving ? '⏳ Saving...' : '✅ Save Product'}
-            </button>
-          </div>
+            </Card>
+          )}
+          <button onClick={handleSave} disabled={saving} className="admin-btn admin-btn-green" style={{ width:'100%', justifyContent:'center', padding:'14px', fontSize:15, opacity:saving?0.7:1 }}>
+            {saving ? '⏳ Saving...' : '✅ Save Product'}
+          </button>
         </div>
-      </main>
-    </div>
+      </div>
+    </AdminPage>
   );
 };
 
@@ -279,13 +163,6 @@ const Field = ({ label, children }) => (
     {children}
   </div>
 );
-
-const card = {
-  background: '#fff',
-  borderRadius: 18,
-  padding: '24px',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-};
 
 const cardTitle = {
   fontSize: 15,

@@ -4,6 +4,7 @@ import { useCartStore } from "../../store/useCartStore";
 import { useNavigate } from "react-router-dom";
 import { saveOrder, listenOrder } from "../../firebase/orderService";
 import { FiMapPin, FiNavigation, FiLoader, FiUser, FiHome } from "react-icons/fi";
+import upiQR from "../../assets/qr.jpeg";
 import { useLocationStore } from "../../store/useLocationStore";
 import { detectAndSaveLocation, STORE_LOCATION, DELIVERY_RADIUS_KM } from "../../utils/locationService";
 
@@ -383,74 +384,129 @@ const Checkout = () => {
 
               {/* ONLINE: QR + Upload */}
               {form.payment === "online" && onlineStatus === "idle" && (
-                <div style={{ marginTop: 20, padding: 16, background: "#f8fafc", borderRadius: 12, border: "1px solid #e2e8f0" }}>
-                  <p style={{ fontWeight: 700, marginBottom: 12, color: "#0f172a" }}>📱 Scan & Pay</p>
-                  <div style={{ textAlign: "center" }}>
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=yourupi@upi&pn=Juimart&am=${total}&cu=INR`}
-                      alt="QR Code"
-                      style={{ width: 160, borderRadius: 10, border: "1px solid #e2e8f0" }}
-                    />
-                    <p style={{ marginTop: 8, fontSize: 13, color: "#64748b" }}>UPI ID: <b style={{ color: "#0f172a" }}>yourupi@upi</b></p>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "#22c55e" }}>Amount: ₹{total}</p>
+                <div style={{ marginTop: 20, background: "#f8fafc", borderRadius: 14, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+                  {/* Header */}
+                  <div style={{ padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>📱</span>
+                    <p style={{ fontWeight: 800, color: "#0f172a", margin: 0, fontSize: 15 }}>Scan & Pay</p>
                   </div>
-                  <div style={{ marginTop: 16 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
+
+                  {/* QR + Info side by side */}
+                  <div style={{ display: "flex", gap: 16, padding: "14px 16px", alignItems: "flex-start" }}>
+                    {/* QR image with shimmer loader */}
+                    <div style={{ flexShrink: 0, position: "relative" }}>
+                      <div style={{
+                        width: 180, height: 180, borderRadius: 12,
+                        border: "2px solid #e2e8f0", overflow: "hidden",
+                        background: "#f1f5f9",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                      }}>
+                        <img
+                          src={upiQR}
+                          alt="UPI QR Code"
+                          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                        />
+                      </div>
+                      <p style={{ fontSize: 10, color: "#94a3b8", textAlign: "center", marginTop: 5, fontWeight: 600 }}>Scan with any UPI app</p>
+                    </div>
+
+                    {/* UPI details */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", border: "1px solid #f1f5f9", marginBottom: 10 }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 4px" }}>UPI ID</p>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: "#0f172a", margin: 0, wordBreak: "break-all" }}>zuiquickmartcc@ucobank</p>
+                      </div>
+                      <div style={{ background: "#f0fdf4", borderRadius: 10, padding: "10px 12px", border: "1px solid #86efac" }}>
+                        <p style={{ fontSize: 10, fontWeight: 700, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 4px" }}>Amount to Pay</p>
+                        <p style={{ fontSize: 22, fontWeight: 800, color: "#15803d", margin: 0, letterSpacing: "-0.5px" }}>₹{total}</p>
+                      </div>
+                      <p style={{ fontSize: 11, color: "#94a3b8", margin: "8px 0 0", lineHeight: 1.4 }}>
+                        Pay exactly ₹{total} and upload the screenshot below
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Upload section */}
+                  <div style={{ padding: "0 16px 16px" }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 8 }}>
                       Upload Payment Screenshot <span style={{ color: "#ef4444" }}>*</span>
                     </p>
-                    <input type="file" accept="image/*" style={{ fontSize: 13 }}
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        setUploading(true);
-                        const reader = new FileReader();
-                        reader.onloadend = () => { setForm((p) => ({ ...p, proof: reader.result })); setUploading(false); };
-                        reader.readAsDataURL(file);
-                      }}
-                    />
-                    {uploading && <p style={{ fontSize: 13, color: "#64748b", marginTop: 6 }}>⏳ Processing...</p>}
-                    {form.proof && (
-                      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
-                        <img src={form.proof} alt="proof" style={{ width: 70, height: 70, objectFit: "cover", borderRadius: 8, border: "2px solid #22c55e" }} />
-                        <span style={{ fontSize: 13, color: "#22c55e", fontWeight: 600 }}>✅ Screenshot uploaded</span>
-                      </div>
-                    )}
-                  </div>
-                  <label style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    marginTop: 14, padding: 12, borderRadius: 8,
-                    background: form.proof ? "#f0fdf4" : "#f8fafc",
-                    border: `1px solid ${form.proof ? "#86efac" : "#e2e8f0"}`,
-                    opacity: form.proof ? 1 : 0.5,
-                    cursor: form.proof ? "pointer" : "not-allowed",
-                  }}>
-                    <input type="checkbox" checked={form.paid} disabled={!form.proof}
-                      style={{ width: 16, height: 16, accentColor: "#22c55e" }}
-                      onChange={async (e) => {
-                        const checked = e.target.checked;
-                        setForm({ ...form, paid: checked });
-                        if (checked) {
-                          if (!validate()) return;
-                          const orderData = buildOrder({
-                            paymentMethod: "online",
-                            paymentStatus: "pending_verification",
-                            paymentProof: form.proof,
-                            orderStatus: "pending",
-                          });
-                          try {
-                            const key = await saveOrder(orderData);
-                            localStorage.setItem("latest-order", JSON.stringify({ ...orderData, firebaseKey: key }));
-                            setPendingOrderId(key);
-                          } catch {
-                            localStorage.setItem("latest-order", JSON.stringify(orderData));
+
+                    {/* Custom file upload */}
+                    <label style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "12px 14px", borderRadius: 10,
+                      border: `2px dashed ${form.proof ? "#22c55e" : "#d1d5db"}`,
+                      background: form.proof ? "#f0fdf4" : "#fff",
+                      cursor: "pointer", transition: "all 0.2s",
+                    }}>
+                      <input type="file" accept="image/*" style={{ display: "none" }}
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          setUploading(true);
+                          const reader = new FileReader();
+                          reader.onloadend = () => { setForm((p) => ({ ...p, proof: reader.result })); setUploading(false); };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                      {uploading ? (
+                        <span style={{ fontSize: 13, color: "#64748b" }}>⏳ Processing...</span>
+                      ) : form.proof ? (
+                        <>
+                          <img src={form.proof} alt="proof" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8, border: "2px solid #22c55e", flexShrink: 0 }} />
+                          <div>
+                            <p style={{ fontSize: 13, color: "#15803d", fontWeight: 700, margin: 0 }}>✅ Screenshot uploaded</p>
+                            <p style={{ fontSize: 11, color: "#64748b", margin: 0 }}>Tap to change</p>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ width: 40, height: 40, borderRadius: 10, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>📸</div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: "#374151", margin: 0 }}>Tap to upload screenshot</p>
+                            <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>JPG, PNG supported</p>
+                          </div>
+                        </>
+                      )}
+                    </label>
+
+                    <label style={{
+                      display: "flex", alignItems: "center", gap: 8,
+                      marginTop: 12, padding: 12, borderRadius: 10,
+                      background: form.proof ? "#f0fdf4" : "#f8fafc",
+                      border: `1px solid ${form.proof ? "#86efac" : "#e2e8f0"}`,
+                      opacity: form.proof ? 1 : 0.5,
+                      cursor: form.proof ? "pointer" : "not-allowed",
+                    }}>
+                      <input type="checkbox" checked={form.paid} disabled={!form.proof}
+                        style={{ width: 16, height: 16, accentColor: "#22c55e" }}
+                        onChange={async (e) => {
+                          const checked = e.target.checked;
+                          setForm({ ...form, paid: checked });
+                          if (checked) {
+                            if (!validate()) return;
+                            const orderData = buildOrder({
+                              paymentMethod: "online",
+                              paymentStatus: "pending_verification",
+                              paymentProof: form.proof,
+                              orderStatus: "pending",
+                            });
+                            try {
+                              const key = await saveOrder(orderData);
+                              localStorage.setItem("latest-order", JSON.stringify({ ...orderData, firebaseKey: key }));
+                              setPendingOrderId(key);
+                            } catch {
+                              localStorage.setItem("latest-order", JSON.stringify(orderData));
+                            }
+                            setOnlineStatus("submitted");
                           }
-                          setOnlineStatus("submitted");
-                        }
-                      }}
-                    />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>I have completed the payment</span>
-                    {!form.proof && <span style={{ fontSize: 11, color: "#ef4444" }}>(upload screenshot first)</span>}
-                  </label>
+                        }}
+                      />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>I have completed the payment</span>
+                      {!form.proof && <span style={{ fontSize: 11, color: "#ef4444" }}>(upload screenshot first)</span>}
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -517,7 +573,7 @@ const Checkout = () => {
               )}
               <div className={styles.total}><span>Total to Pay</span><span>₹{total}</span></div>
               {renderButton()}
-              <p className={styles.secure}>🔒 Secure checkout by Juimart</p>
+              <p className={styles.secure}>🔒 Secure checkout by Zui Quick Mart</p>
             </div>
           </div>
 

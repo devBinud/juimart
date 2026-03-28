@@ -454,7 +454,7 @@ const ProductDetails = () => {
           {/* WhatsApp */}
           <a
             href={`https://wa.me/919706393924?text=${encodeURIComponent(
-              `*Hello JuiMart,*\n\nI'm interested in:\n\n✨ *${product.name}*\n💰 *Price:* ₹${product.price}\n\nPlease share more details. Thank you!`
+              `*Hello Zui Quick Mart,*\n\nI'm interested in:\n\n✨ *${product.name}*\n💰 *Price:* ₹${product.price}\n\nPlease share more details. Thank you!`
             )}`}
             target="_blank"
             rel="noopener noreferrer"

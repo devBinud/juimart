@@ -31,6 +31,15 @@
   gap: 10px;
 }
 
+/* Left group: logo + location pill together */
+.navLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
 /* ================= LOGO ================= */
 .logo {
   display: flex;
@@ -58,9 +67,8 @@
   font-family: 'Outfit', sans-serif;
   flex-shrink: 1;
   min-width: 0;
+  max-width: 140px;
   transition: all 0.2s;
-  border: 1.5px solid #e2e8f0;
-  background: #f8fafc;
 }
 
 .locationPill span {
@@ -70,7 +78,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90px;
 }
 
 /* ================= ACTIONS ================= */

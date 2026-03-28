@@ -4,15 +4,23 @@ import { useNavigate } from "react-router-dom";
 // category values must match exactly what's stored in Firebase / local products
 const CATS = [
   { label: "Fruits & Veggies", emoji: "🥦", category: "Fruits & Vegetables", color: "#f0fdf4", border: "#86efac", text: "#15803d" },
-  { label: "Dairy & Eggs",     emoji: "🥛", category: "Dairy & Eggs",         color: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8" },
-  { label: "Grocery",          emoji: "🛒", category: "Grocery",              color: "#fefce8", border: "#fde047", text: "#854d0e" },
-  { label: "Vegetables",       emoji: "🥕", category: "Vegetables",           color: "#f0fdf4", border: "#bbf7d0", text: "#166534" },
-  { label: "Snacks",           emoji: "�", category: "Snacks",               color: "#fff7ed", border: "#fdba74", text: "#c2410c" },
-  { label: "Beverages",        emoji: "🧃", category: "Beverages",            color: "#f5f3ff", border: "#c4b5fd", text: "#6d28d9" },
-  { label: "Bakery",           emoji: "🍞", category: "Bakery",               color: "#fdf4ff", border: "#e879f9", text: "#86198f" },
-  { label: "Meat & Fish",      emoji: "🐟", category: "Meat & Fish",          color: "#fff1f2", border: "#fda4af", text: "#be123c" },
-  { label: "Frozen",           emoji: "�", category: "Frozen",               color: "#f0f9ff", border: "#7dd3fc", text: "#0369a1" },
-  { label: "Personal Care",    emoji: "🧴", category: "Personal Care",        color: "#fdf2f8", border: "#f0abfc", text: "#a21caf" },
+  { label: "Dairy & Eggs",     emoji: "🥛", category: "Dairy & Eggs",        color: "#eff6ff", border: "#bfdbfe", text: "#1d4ed8" },
+  { label: "Grocery",          emoji: "🛒", category: "Grocery",             color: "#fefce8", border: "#fde047", text: "#854d0e" },
+  { label: "Vegetables",       emoji: "🥕", category: "Vegetables",          color: "#f0fdf4", border: "#bbf7d0", text: "#166534" },
+  { label: "Snacks",           emoji: "🍿", category: "Snacks",              color: "#fff7ed", border: "#fdba74", text: "#c2410c" },
+  { label: "Beverages",        emoji: "🧃", category: "Beverages",           color: "#f5f3ff", border: "#c4b5fd", text: "#6d28d9" },
+  { label: "Bakery",           emoji: "🍞", category: "Bakery",              color: "#fdf4ff", border: "#e879f9", text: "#86198f" },
+  { label: "Meat & Fish",      emoji: "🐟", category: "Meat & Fish",         color: "#fff1f2", border: "#fda4af", text: "#be123c" },
+  { label: "Frozen",           emoji: "🧊", category: "Frozen",              color: "#f0f9ff", border: "#7dd3fc", text: "#0369a1" },
+  { label: "Personal Care",    emoji: "🧴", category: "Personal Care",       color: "#fdf2f8", border: "#f0abfc", text: "#a21caf" },
+  { label: "Beauty",           emoji: "💄", category: "Beauty",              color: "#fff1f2", border: "#fecdd3", text: "#be123c" },
+  { label: "Pickles & Achar",  emoji: "🫙", category: "Pickles & Achar",     color: "#fefce8", border: "#fef08a", text: "#713f12" },
+  { label: "Local Products",   emoji: "🏡", category: "Local Products",      color: "#f0fdf4", border: "#6ee7b7", text: "#065f46" },
+  { label: "Spices",           emoji: "🌶️", category: "Spices",             color: "#fff7ed", border: "#fed7aa", text: "#9a3412" },
+  { label: "Cleaning",         emoji: "🧹", category: "Cleaning",            color: "#f0fdfa", border: "#5eead4", text: "#0f766e" },
+  { label: "Baby Care",        emoji: "👶", category: "Baby Care",           color: "#eff6ff", border: "#93c5fd", text: "#1e40af" },
+  { label: "Pet Care",         emoji: "🐾", category: "Pet Care",            color: "#fdf4ff", border: "#d8b4fe", text: "#7e22ce" },
+  { label: "Stationery",       emoji: "📝", category: "Stationery",          color: "#f8fafc", border: "#cbd5e1", text: "#475569" },
 ];
 
 const QuickCategories = () => {

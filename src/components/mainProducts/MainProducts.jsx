@@ -58,7 +58,7 @@ const MainProducts = () => {
         }
         @media(min-width: 600px)  { .mp-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
         @media(min-width: 900px)  { .mp-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
-        @media(min-width: 1100px) { .mp-grid { grid-template-columns: repeat(5, 1fr); gap: 18px; } }
+        @media(min-width: 1100px) { .mp-grid { grid-template-columns: repeat(6, 1fr); gap: 16px; } }
         .mp-cat-pill {
           padding: 6px 14px;
           border-radius: 50px;

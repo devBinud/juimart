@@ -17,7 +17,7 @@ const Footer = () => {
 
         {/* LEFT */}
         <div className={styles.brand}>
-          <h2>JuiMart</h2>
+          <h2>Zui Quick Mart</h2>
           <p>
             A celebration of Northeast India's rich heritage through natural,
             handmade, and sustainable products.
@@ -26,13 +26,13 @@ const Footer = () => {
           {/* CONTACT */}
           <div className={styles.contact}>
             <div>
-              <FaWhatsapp /> <span>+91 9395108221</span>
+              <FaWhatsapp /> <span>+91 863 824 0878</span>
             </div>
             <div>
-              <FaPhoneAlt /> <span>+91 9706393924</span>
+              <FaPhoneAlt /> <span>+91 863 824 0878</span>
             </div>
             <div>
-              <FaEnvelope /> <span>support@juimart.com</span>
+              <FaEnvelope /> <span>support@zuiquickmart.co.in</span>
             </div>
           </div>
 
@@ -47,15 +47,16 @@ const Footer = () => {
 
         {/* LINKS */}
         <div className={styles.links}>
-          <h4>Help</h4>
-          <a href="/">Contact Us</a>
-          <a href="/">Privacy Policy</a>
-          <a href="/">Terms & Conditions</a>
-        </div>
+          <h5>Help</h5>
+          <a href="/contact-us">Contact Us</a>
+          <a href="/privacy-policy">Privacy Policy</a>
+          <a href="/terms-conditions">Terms & Conditions</a>
+          <a href="/return-policy">Return & Refund Policy</a>
+        </div> 
 
         {/* NEWSLETTER */}
         <div className={styles.newsletter}>
-          <h4>Stay Updated</h4>
+          <h5>Stay Updated</h5>
           <p>Get latest offers and updates directly in your inbox.</p>
 
           <div className={styles.inputBox}>
@@ -68,7 +69,7 @@ const Footer = () => {
 
       {/* BOTTOM */}
       <div className={styles.bottom}>
-        © {new Date().getFullYear()} JuiMart. All rights reserved | Developed by Binud Panging
+        © {new Date().getFullYear()} Zui Quick Mart. All rights reserved | Developed by <a href="https://binud.vercel.app" target="_blank" rel="noopener noreferrer" style={{ color: '#22c55e', textDecoration: 'none', fontWeight: 600 }}>Binud Panging</a>
       </div>
     </footer>
   );

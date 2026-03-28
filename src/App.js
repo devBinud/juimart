@@ -4,13 +4,13 @@ import './App.css';
 
 import PublicHome from './pages/public/Home.jsx';
 import Navbar from './components/Navbar.jsx';
-import About from './components/aboutus/About.jsx';
-import ProductEnquiry from './components/productenquiry/ProductEnquiry.jsx';
 import AllProducts from './components/allproducts/AllProducts.jsx';
 import ProductDetails from './components/productdetails/ProductDetails.jsx';
 import Footer from './components/Footer.jsx';
-import Contact from './components/contactus/Contact.jsx';
-import PrivacyPolicy from './components/privacypolicy/PrivacyPolicy.js';
+import ContactUsPage from './pages/public/ContactUs.jsx';
+import PrivacyPolicyPage from './pages/public/PrivacyPolicy.jsx';
+import TermsConditions from './pages/public/TermsConditions.jsx';
+import ReturnPolicy from './pages/public/ReturnPolicy.jsx';
 import Checkout from './components/checkout/Checkout.jsx';
 import OrderSuccess from './components/orderSuccess/OrderSuccess.jsx';
 import Receipt from './components/receipt/Receipt.jsx';
@@ -50,12 +50,12 @@ const App = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<PublicHome />} />
-        <Route path="/about-us" element={<About />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/all-products" element={<AllProducts />} />
         <Route path="/product-details/:id" element={<ProductDetails />} />
-        <Route path="/product-enquiry" element={<ProductEnquiry />} />
-        <Route path="/contact-us" element={<Contact />} />
+        <Route path="/contact-us" element={<ContactUsPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms-conditions" element={<TermsConditions />} />
+        <Route path="/return-policy" element={<ReturnPolicy />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/receipt" element={<Receipt />} />

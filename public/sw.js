@@ -1,4 +1,4 @@
-const CACHE_NAME = "juimart-v2";
+const CACHE_NAME = "zui-quick-mart-v2";
 const SHELL = ["/", "/index.html", "/manifest.json", "/favicon.ico", "/logo192.png", "/logo512.png"];
 
 // Install
@@ -48,7 +48,7 @@ self.addEventListener("fetch", (e) => {
 self.addEventListener("push", (e) => {
   const data = e.data?.json() || {};
   e.waitUntil(
-    self.registration.showNotification(data.title || "JuiMart", {
+    self.registration.showNotification(data.title || "zui-quick-mart", {
       body: data.body || "You have a new update!",
       icon: "/logo192.png",
       badge: "/logo192.png",

@@ -32,43 +32,51 @@ const QuickPicks = () => {
             const qty = item?.quantity || 0;
             return (
               <div key={product.id} style={{
-                flexShrink: 0, width: 100,
+                flexShrink: 0, width: 130,
                 background: "#fff", borderRadius: 14,
                 border: "1px solid #f1f5f9",
-                padding: "10px 8px",
-                boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+                overflow: "hidden",
+                boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
                 transition: "transform 0.18s, box-shadow 0.18s",
               }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.04)"; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.09)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 1px 6px rgba(0,0,0,0.05)"; }}
               >
-                {/* Image — clickable to product detail */}
+                {/* Image — same height as DealsStrip */}
                 <div onClick={() => navigate(`/product-details/local-${product.id}`)}
-                  style={{ width: 64, height: 64, borderRadius: 10, overflow: "hidden", background: "#f8fafc", flexShrink: 0, cursor: "pointer" }}>
+                  style={{ height: 110, background: "#f8fafc", overflow: "hidden", cursor: "pointer" }}>
                   <img src={product.image} alt={product.name}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     onError={e => { e.target.style.display = "none"; }} />
                 </div>
-                <p onClick={() => navigate(`/product-details/local-${product.id}`)}
-                  style={{ fontSize: 11, fontWeight: 700, color: "#0f172a", textAlign: "center", lineHeight: 1.3, margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", width: "100%", cursor: "pointer" }}>
-                  {product.name}
-                </p>
-                {product.weight && <p style={{ fontSize: 9, color: "#94a3b8", margin: 0 }}>{product.weight}</p>}
-                <p style={{ fontSize: 12, fontWeight: 800, color: "#0f172a", margin: 0 }}>₹{product.price}</p>
 
-                {qty > 0 ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#22c55e", borderRadius: 50, padding: "4px 8px", width: "100%", justifyContent: "center" }}>
-                    <button onClick={() => decreaseQty(product.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", display: "flex", padding: 0 }}><FiMinus size={10} /></button>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", minWidth: 12, textAlign: "center" }}>{qty}</span>
-                    <button onClick={() => increaseQty(product.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", display: "flex", padding: 0 }}><FiPlus size={10} /></button>
+                {/* Info */}
+                <div style={{ padding: "9px 10px 10px" }}>
+                  <p onClick={() => navigate(`/product-details/local-${product.id}`)}
+                    style={{ fontSize: 11, fontWeight: 700, color: "#0f172a", margin: "0 0 2px", lineHeight: 1.3, cursor: "pointer", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {product.name}
+                  </p>
+                  {product.weight && <p style={{ fontSize: 10, color: "#94a3b8", margin: "0 0 7px" }}>{product.weight}</p>}
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: "#0f172a" }}>₹{product.price}</span>
+                      {product.oldPrice && <span style={{ fontSize: 10, color: "#94a3b8", textDecoration: "line-through", marginLeft: 3 }}>₹{product.oldPrice}</span>}
+                    </div>
+                    {qty > 0 ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#22c55e", borderRadius: 50, padding: "3px 8px" }}>
+                        <button onClick={() => decreaseQty(product.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", display: "flex", padding: 0 }}><FiMinus size={10} /></button>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", minWidth: 12, textAlign: "center" }}>{qty}</span>
+                        <button onClick={() => increaseQty(product.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", display: "flex", padding: 0 }}><FiPlus size={10} /></button>
+                      </div>
+                    ) : (
+                      <button onClick={() => addToCart({ ...product, quantity: 1 })}
+                        style={{ width: 26, height: 26, borderRadius: 8, background: "#22c55e", color: "#fff", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                        <FiPlus size={12} />
+                      </button>
+                    )}
                   </div>
-                ) : (
-                  <button onClick={() => addToCart({ ...product, quantity: 1 })}
-                    style={{ width: "100%", padding: "5px 0", background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: 50, color: "#15803d", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 3 }}>
-                    <FiPlus size={10} /> Add
-                  </button>
-                )}
+                </div>
               </div>
             );
           })}

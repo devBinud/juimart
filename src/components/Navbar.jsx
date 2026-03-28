@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiShoppingCart, FiSearch, FiLogOut, FiGrid, FiX, FiMapPin, FiNavigation } from "react-icons/fi";
+import { FiShoppingCart, FiSearch, FiX, FiMapPin, FiNavigation } from "react-icons/fi";
 import { getDatabase, ref, onValue } from "firebase/database";
 import styles from "./navbar.module.css";
 import logo from "../assets/logo.png";
@@ -8,80 +8,6 @@ import { useCartStore } from "../store/useCartStore";
 import localProducts from "../data/products";
 import { useLocationStore } from "../store/useLocationStore";
 import { detectAndSaveLocation, DELIVERY_RADIUS_KM } from "../utils/locationService";
-
-const AdminTopbar = () => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("adminExpiry");
-    navigate("/admin/login");
-  };
-
-  return (
-    <header style={{
-      width: "100%",
-      background: "#0f172a",
-      borderBottom: "1px solid rgba(255,255,255,0.06)",
-      position: "sticky",
-      top: 0,
-      zIndex: 1000,
-      fontFamily: "'Outfit', sans-serif",
-    }}>
-      <div style={{
-        maxWidth: "100%",
-        padding: "0 24px",
-        height: 56,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}>
-        {/* LEFT — Logo + label */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={logo} alt="Juimart" style={{ height: 36 }} />
-          <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.15)" }} />
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <FiGrid style={{ color: "#22c55e", fontSize: 14 }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#94a3b8", letterSpacing: "0.3px" }}>
-              Admin Panel
-            </span>
-          </div>
-        </div>
-
-        {/* RIGHT — Admin info + logout */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{
-              width: 30, height: 30, borderRadius: "50%",
-              background: "linear-gradient(135deg, #22c55e, #16a34a)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13, fontWeight: 700, color: "#fff",
-            }}>A</div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>Admin</span>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "7px 14px", borderRadius: 8,
-              background: "rgba(239,68,68,0.1)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              color: "#f87171", fontSize: 13, fontWeight: 600,
-              cursor: "pointer", fontFamily: "'Outfit', sans-serif",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(239,68,68,0.2)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
-          >
-            <FiLogOut style={{ fontSize: 14 }} />
-            Logout
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-};
 
 const Navbar = () => {
   const location = useLocation();
@@ -202,8 +128,8 @@ const Navbar = () => {
     setShowDropdown(false);
   };
 
-  // Show clean admin topbar on all admin pages — AFTER all hooks
-  if (isAdminRoute) return <AdminTopbar />;
+  // Admin pages handle their own layout via AdminLayout.jsx
+  if (isAdminRoute) return null;
 
   return (
     <header
@@ -211,29 +137,31 @@ const Navbar = () => {
     >
       <div className={styles.container}>
         <nav className={styles.navbar}>
-          {/* LOGO */}
-          <Link to="/" className={styles.logo}>
-            <img src={logo} alt="JMart" />
-          </Link>
+          {/* LEFT GROUP: Logo + Location */}
+          <div className={styles.navLeft}>
+            <Link to="/" className={styles.logo}>
+              <img src={logo} alt="Zui Quick Mart" />
+            </Link>
 
-          {/* LOCATION PILL — left side, shrinks on mobile */}
-          <button
-            onClick={shortAddress ? clearLocation : handleDetectLocation}
-            title={shortAddress ? `${distanceKm} km from store — tap to reset` : "Detect your location"}
-            className={styles.locationPill}
-            style={{
-              background: inZone === false ? "#fef2f2" : inZone === true ? "#f0fdf4" : "#f8fafc",
-              border: `1.5px solid ${inZone === false ? "#fca5a5" : inZone === true ? "#86efac" : "#e2e8f0"}`,
-            }}
-          >
-            {detecting
-              ? <FiNavigation size={11} color="#22c55e" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
-              : <FiMapPin size={11} color={inZone === false ? "#ef4444" : inZone === true ? "#22c55e" : "#94a3b8"} style={{ flexShrink: 0 }} />
-            }
-            <span style={{ color: inZone === false ? "#dc2626" : inZone === true ? "#15803d" : "#64748b" }}>
-              {detecting ? "Detecting..." : shortAddress || "Set location"}
-            </span>
-          </button>
+            {/* LOCATION PILL */}
+            <button
+              onClick={shortAddress ? clearLocation : handleDetectLocation}
+              title={shortAddress ? `${distanceKm} km from store — tap to reset` : "Detect your location"}
+              className={styles.locationPill}
+              style={{
+                background: inZone === false ? "#fef2f2" : inZone === true ? "#f0fdf4" : "#f8fafc",
+                border: `1.5px solid ${inZone === false ? "#fca5a5" : inZone === true ? "#86efac" : "#e2e8f0"}`,
+              }}
+            >
+              {detecting
+                ? <FiNavigation size={11} color="#22c55e" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+                : <FiMapPin size={11} color={inZone === false ? "#ef4444" : inZone === true ? "#22c55e" : "#94a3b8"} style={{ flexShrink: 0 }} />
+              }
+              <span style={{ color: inZone === false ? "#dc2626" : inZone === true ? "#15803d" : "#64748b" }}>
+                {detecting ? "Detecting..." : shortAddress || "Set location"}
+              </span>
+            </button>
+          </div>
 
           {/* SEARCH — desktop only (inline in navbar row) */}
           <div className={`${styles.searchWrapper} ${styles.navSearchDesktop}`} ref={searchRef}>

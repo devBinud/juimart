@@ -1,28 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { listenVisits } from '../../firebase/analyticsService';
+import { AdminPage, PageHeader } from './AdminLayout';
 import './admin.css';
-
-const NAV_ITEMS = [
-  { label: '📊 Dashboard',      href: '/admin/dashboard' },
-  { label: '➕ Add Product',     href: '/admin/add-product' },
-  { label: '📦 Manage Products', href: '/admin/all-products' },
-  { label: '🧾 All Orders',      href: '/admin/all-orders' },
-  { label: '📈 Analytics',       href: '/admin/analytics' },
-];
-
-const Sidebar = () => (
-  <aside className="admin-sidebar">
-    <div className="admin-sidebar-logo">🌿 Juimart</div>
-    <nav className="admin-nav">
-      {NAV_ITEMS.map((item) => (
-        <a key={item.href} href={item.href}
-          className={`admin-nav-link ${window.location.pathname === item.href ? 'active' : ''}`}>
-          {item.label}
-        </a>
-      ))}
-    </nav>
-  </aside>
-);
 
 /* ── Bar chart row ── */
 const Bar = ({ label, value, max, color }) => (
@@ -115,17 +94,8 @@ const Analytics = () => {
   const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
   return (
-    <div className="admin-page">
-      <Sidebar />
-      <main className="admin-main">
-
-        {/* Header */}
-        <div className="admin-topbar">
-          <div>
-            <h1 className="admin-heading">📈 Analytics</h1>
-            <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Visitor insights from last 500 sessions</p>
-          </div>
-        </div>
+    <AdminPage>
+      <PageHeader title="📈 Analytics" subtitle="Visitor insights from last 500 sessions" />
 
         {loading ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16, marginBottom: 28 }}>
@@ -289,8 +259,7 @@ const Analytics = () => {
             </div>
           </>
         )}
-      </main>
-    </div>
+    </AdminPage>
   );
 };
 

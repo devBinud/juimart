@@ -1,7 +1,4 @@
-import { getDatabase, ref, push, set, update, onValue, off } from 'firebase/database';
-
-// No import from config — getDatabase() uses the default app automatically
-// as long as initializeApp() has been called once (which happens in config.js via App.js)
+import { getDatabase, ref, push, set, update, remove, onValue, off } from 'firebase/database';
 
 const db = () => getDatabase();
 
@@ -14,6 +11,10 @@ export const saveOrder = async (orderData) => {
 
 export const updateOrder = async (firebaseKey, patch) => {
   await update(ref(db(), `orders/${firebaseKey}`), patch);
+};
+
+export const deleteOrder = async (firebaseKey) => {
+  await remove(ref(db(), `orders/${firebaseKey}`));
 };
 
 export const listenOrders = (callback) => {
