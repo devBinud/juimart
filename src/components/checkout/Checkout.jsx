@@ -344,7 +344,7 @@ const Checkout = () => {
                       You're <strong>{distanceKm} km</strong> away. We currently deliver within <strong>{DELIVERY_RADIUS_KM} km</strong> of {STORE_LOCATION.name}.
                     </p>
                     <p style={{ fontSize: 12, color: "#b91c1c", margin: 0 }}>
-                      📞 Call us to check if we can arrange delivery: <strong>+91 9101038129</strong>
+                      📞 Call us to check if we can arrange delivery: <strong>+918638240878</strong>
                     </p>
                     <button
                       onClick={() => { setOutOfZone(false); setDistanceKm(null); setForm(f => ({ ...f, address: "" })); }}
@@ -541,7 +541,7 @@ const Checkout = () => {
                   <p style={{ fontSize: 32, marginBottom: 8 }}>❌</p>
                   <p style={{ fontWeight: 700, fontSize: 16, color: "#dc2626" }}>Payment Rejected</p>
                   <p style={{ fontSize: 13, color: "#b91c1c", marginTop: 4, marginBottom: 12 }}>Please retry with a clear screenshot.</p>
-                  <p style={{ fontSize: 13, color: "#6b7280" }}>Need help? Call: <b style={{ color: "#0f172a" }}>+91 9101038129</b></p>
+                  <p style={{ fontSize: 13, color: "#6b7280" }}>Need help? Call: <b style={{ color: "#0f172a" }}>+91 8638240878</b></p>
                 </div>
               )}
             </div>
