@@ -90,7 +90,7 @@ const Receipt = () => {
 
           {/* Footer */}
           <p style={{ textAlign:"center", fontSize:11, color:"#94a3b8", margin:0 }}>Thank you for shopping with Zui Quick Mart! ❤️</p>
-          <p style={{ textAlign:"center", fontSize:10, color:"#cbd5e1", margin:"4px 0 0" }}>Support: +91 9101038129</p>
+          <p style={{ textAlign:"center", fontSize:10, color:"#cbd5e1", margin:"4px 0 0" }}>Support: +91 8638240878</p>
         </div>
 
         {/* Actions */}
