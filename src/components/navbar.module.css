@@ -9,6 +9,8 @@
   transition: all 0.3s ease;
 }
 
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .scrolled {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
 }
@@ -17,7 +19,7 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
 /* ================= NAVBAR ================= */
@@ -25,8 +27,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
-  gap: 16px;
+  height: 56px;
+  gap: 10px;
 }
 
 /* ================= LOGO ================= */
@@ -38,42 +40,114 @@
   font-size: 18px;
   color: #111;
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .logo img {
-  height: 60px;
+  height: 44px;
+}
+
+/* ================= LOCATION PILL ================= */
+.locationPill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  flex-shrink: 1;
+  min-width: 0;
+  transition: all 0.2s;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.locationPill span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+/* ================= ACTIONS ================= */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ================= SEARCH ROW (second row on mobile) ================= */
+.searchRow {
+  padding: 0 16px 10px;
 }
 
 /* ================= SEARCH ================= */
 .searchWrapper {
-  flex: 1;
-  max-width: 550px;
   position: relative;
+  width: 100%;
 }
 
 .searchWrapper input {
   width: 100%;
-  height: 44px;
+  height: 40px;
   border-radius: 50px;
   border: 1.5px solid #22c55e;
-  padding: 0 16px 0 42px;
+  padding: 0 16px 0 40px;
   font-size: 14px;
   background: #f9fafb;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
 }
 
 .searchWrapper input:focus {
   background: #fff;
   border-color: #16a34a;
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+  outline: none;
 }
 
 .searchIcon {
   position: absolute;
-  left: 14px;
+  left: 13px;
   top: 50%;
   transform: translateY(-50%);
   color: #9ca3af;
+}
+
+/* Desktop: search in the navbar row */
+@media (min-width: 768px) {
+  .navbar {
+    height: 64px;
+    gap: 16px;
+  }
+  .logo img {
+    height: 52px;
+  }
+  .searchRow {
+    display: none;
+  }
+  .searchWrapper {
+    flex: 1;
+    max-width: 500px;
+  }
+  .navSearchDesktop {
+    flex: 1;
+    max-width: 500px;
+    position: relative;
+  }
+}
+
+/* Mobile: hide search from navbar row, show in second row */
+@media (max-width: 767px) {
+  .navSearchDesktop {
+    display: none;
+  }
 }
 
 /* ================= ACTIONS ================= */

@@ -16,7 +16,6 @@ const PWAInstallBanner = () => {
   const [showIOS, setShowIOS] = useState(false);
 
   useEffect(() => {
-    // Show iOS banner after 3s if not already installed and not dismissed
     if (isIOS() && !isInStandaloneMode()) {
       const alreadyDismissed = sessionStorage.getItem("pwa-ios-dismissed");
       if (!alreadyDismissed) {
@@ -25,6 +24,9 @@ const PWAInstallBanner = () => {
       }
     }
   }, []);
+
+  // Disable during development — after all hooks
+  if (process.env.NODE_ENV === 'development') return null;
 
   const dismissIOS = () => {
     setShowIOS(false);

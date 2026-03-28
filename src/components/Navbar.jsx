@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FiShoppingCart, FiSearch, FiLogOut, FiGrid, FiX } from "react-icons/fi";
+import { FiShoppingCart, FiSearch, FiLogOut, FiGrid, FiX, FiMapPin, FiNavigation } from "react-icons/fi";
 import { getDatabase, ref, onValue } from "firebase/database";
 import styles from "./navbar.module.css";
 import logo from "../assets/logo.png";
 import { useCartStore } from "../store/useCartStore";
 import localProducts from "../data/products";
+import { useLocationStore } from "../store/useLocationStore";
+import { detectAndSaveLocation, DELIVERY_RADIUS_KM } from "../utils/locationService";
 
 const AdminTopbar = () => {
   const navigate = useNavigate();
@@ -93,6 +95,16 @@ const Navbar = () => {
   const [activeIdx, setActiveIdx] = useState(-1);
   const searchRef = useRef(null);
   const navigate = useNavigate();
+
+  const { shortAddress, inZone, detecting, distanceKm, clearLocation } = useLocationStore();
+
+  const handleDetectLocation = async () => {
+    try {
+      await detectAndSaveLocation();
+    } catch (err) {
+      console.warn("Location error:", err?.message);
+    }
+  };
 
   // Load Firebase products once
   useEffect(() => {
@@ -204,8 +216,27 @@ const Navbar = () => {
             <img src={logo} alt="JMart" />
           </Link>
 
-          {/* SEARCH */}
-          <div className={styles.searchWrapper} ref={searchRef}>
+          {/* LOCATION PILL — left side, shrinks on mobile */}
+          <button
+            onClick={shortAddress ? clearLocation : handleDetectLocation}
+            title={shortAddress ? `${distanceKm} km from store — tap to reset` : "Detect your location"}
+            className={styles.locationPill}
+            style={{
+              background: inZone === false ? "#fef2f2" : inZone === true ? "#f0fdf4" : "#f8fafc",
+              border: `1.5px solid ${inZone === false ? "#fca5a5" : inZone === true ? "#86efac" : "#e2e8f0"}`,
+            }}
+          >
+            {detecting
+              ? <FiNavigation size={11} color="#22c55e" style={{ animation: "spin 1s linear infinite", flexShrink: 0 }} />
+              : <FiMapPin size={11} color={inZone === false ? "#ef4444" : inZone === true ? "#22c55e" : "#94a3b8"} style={{ flexShrink: 0 }} />
+            }
+            <span style={{ color: inZone === false ? "#dc2626" : inZone === true ? "#15803d" : "#64748b" }}>
+              {detecting ? "Detecting..." : shortAddress || "Set location"}
+            </span>
+          </button>
+
+          {/* SEARCH — desktop only (inline in navbar row) */}
+          <div className={`${styles.searchWrapper} ${styles.navSearchDesktop}`} ref={searchRef}>
             <FiSearch className={styles.searchIcon} />
             <input
               placeholder="Search groceries..."
@@ -327,6 +358,73 @@ const Navbar = () => {
           </div>
         </nav>
       </div>
+
+      {/* MOBILE SEARCH ROW — second row, hidden on desktop */}
+      <div className={styles.searchRow} ref={searchRef}>
+        <div className={styles.searchWrapper}>
+          <FiSearch className={styles.searchIcon} />
+          <input
+            placeholder="Search groceries..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => query && setShowDropdown(true)}
+            autoComplete="off"
+          />
+          {query && (
+            <button onClick={() => { setQuery(""); setShowDropdown(false); }}
+              style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}>
+              <FiX size={14} />
+            </button>
+          )}
+          {/* Mobile dropdown */}
+          {showDropdown && (
+            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#fff", borderRadius: 14, boxShadow: "0 12px 40px rgba(0,0,0,0.12)", zIndex: 2000, overflow: "hidden", border: "1px solid #f1f5f9" }}>
+              {results.length === 0 ? (
+                <div style={{ padding: "20px 16px", textAlign: "center" }}>
+                  <p style={{ fontSize: 28, margin: "0 0 6px" }}>🔍</p>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", margin: "0 0 3px" }}>No results for "{query}"</p>
+                  <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>Try "tomato", "milk" or "rice"</p>
+                </div>
+              ) : (
+                <>
+                  {results.map((product, i) => (
+                    <div key={product.id} onMouseDown={() => handleSelect(product)}
+                      style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", cursor: "pointer", background: i === activeIdx ? "#f0fdf4" : "#fff", borderBottom: i < results.length - 1 ? "1px solid #f8fafc" : "none" }}
+                      onMouseEnter={() => setActiveIdx(i)}>
+                      <img src={product.image} alt={product.name} style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} onError={e => { e.target.style.display = "none"; }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "#0f172a", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{product.name}</p>
+                        <p style={{ fontSize: 11, color: "#64748b", margin: 0 }}>{product.category}</p>
+                      </div>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#22c55e", flexShrink: 0 }}>₹{product.price}</span>
+                    </div>
+                  ))}
+                  <div onMouseDown={() => { navigate(`/all-products?search=${encodeURIComponent(query)}`); setShowDropdown(false); setQuery(""); }}
+                    style={{ padding: "10px 14px", fontSize: 12, color: "#22c55e", fontWeight: 700, cursor: "pointer", textAlign: "center", background: "#f8fafc" }}>
+                    See all results for "{query}" →
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* OUT OF ZONE BANNER */}
+      {inZone === false && (
+        <div style={{ background: "#fef2f2", borderTop: "1px solid #fecaca" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto", padding: "6px 16px", display: "flex", alignItems: "center", gap: 6, fontFamily: "'Outfit', sans-serif" }}>
+            <FiMapPin size={12} color="#ef4444" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#dc2626", flex: 1, minWidth: 0 }}>
+              {distanceKm} km away · Delivery within {DELIVERY_RADIUS_KM} km only
+            </span>
+            <button onClick={clearLocation} style={{ fontSize: 11, color: "#dc2626", background: "none", border: "1px solid #fca5a5", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 700, flexShrink: 0 }}>
+              Change
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* CART DRAWER */}
       {isCartOpen && (

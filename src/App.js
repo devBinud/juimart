@@ -25,6 +25,7 @@ import Login from './pages/admin/Login.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import Analytics from './pages/admin/Analytics.jsx';
 import PWAInstallBanner from './components/PWAInstallBanner.jsx';
+import CartToast from './components/CartToast.jsx';
 import { logVisit } from './firebase/analyticsService';
 
 const App = () => {
@@ -110,6 +111,7 @@ const App = () => {
 
       {!hideFooter && <Footer />}
       <PWAInstallBanner />
+      <CartToast />
     </>
   );
 };

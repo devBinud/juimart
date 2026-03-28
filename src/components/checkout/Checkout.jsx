@@ -4,35 +4,22 @@ import { useCartStore } from "../../store/useCartStore";
 import { useNavigate } from "react-router-dom";
 import { saveOrder, listenOrder } from "../../firebase/orderService";
 import { FiMapPin, FiNavigation, FiLoader, FiUser, FiHome } from "react-icons/fi";
+import { useLocationStore } from "../../store/useLocationStore";
+import { detectAndSaveLocation, STORE_LOCATION, DELIVERY_RADIUS_KM } from "../../utils/locationService";
 
 /* ── helpers ── */
 const isValidIndianPhone = (p) => /^[6-9]\d{9}$/.test(p.replace(/\s/g, ""));
-
-const reverseGeocode = async (lat, lng) => {
-  try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
-    );
-    const data = await res.json();
-    const a = data.address || {};
-    const parts = [
-      a.road || a.pedestrian || a.footway,
-      a.neighbourhood || a.suburb,
-      a.city || a.town || a.village || a.county,
-      a.state,
-      a.postcode,
-    ].filter(Boolean);
-    return parts.join(", ");
-  } catch {
-    return "";
-  }
-};
 
 const Checkout = () => {
   const cart = useCartStore((s) => s.cart);
   const totalPrice = useCartStore((s) => s.totalPrice());
   const clearCart = useCartStore((s) => s.clearCart);
   const navigate = useNavigate();
+
+  // Pull saved location from store
+  const savedAddress = useLocationStore((s) => s.address);
+  const savedInZone  = useLocationStore((s) => s.inZone);
+  const savedDist    = useLocationStore((s) => s.distanceKm);
 
   const FREE_DELIVERY_THRESHOLD = 100;
   const DELIVERY_FEE = 25;
@@ -51,10 +38,21 @@ const Checkout = () => {
   const [placing, setPlacing] = useState(false);
   const [locLoading, setLocLoading] = useState(false);
   const [locError, setLocError] = useState("");
+  const [outOfZone, setOutOfZone] = useState(savedInZone === false);
+  const [distanceKm, setDistanceKm] = useState(savedDist);
 
   const [onlineStatus, setOnlineStatus] = useState("idle");
   const [pendingOrderId, setPendingOrderId] = useState(null);
   const [waitTimer, setWaitTimer] = useState(60);
+
+  // Auto-fill address from saved location store
+  useEffect(() => {
+    if (savedAddress && !form.address) {
+      setForm(f => ({ ...f, address: savedAddress }));
+      setOutOfZone(savedInZone === false);
+      setDistanceKm(savedDist);
+    }
+  }, [savedAddress]); // eslint-disable-line
 
   useEffect(() => { if (cart.length === 0) navigate("/"); }, [cart, navigate]);
 
@@ -75,32 +73,26 @@ const Checkout = () => {
     return () => clearInterval(iv);
   }, [onlineStatus]);
 
-  /* ── Location detect ── */
-  const handleDetectLocation = () => {
+  /* ── Location detect — uses shared service + saves to store ── */
+  const handleDetectLocation = async () => {
     setLocError("");
-    if (!navigator.geolocation) {
-      setLocError("Geolocation is not supported by your browser.");
-      return;
-    }
     setLocLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const addr = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-        if (addr) {
-          setForm((f) => ({ ...f, address: addr }));
-          setErrors((e) => ({ ...e, address: "" }));
-        } else {
-          setLocError("Could not fetch address. Please type manually.");
-        }
-        setLocLoading(false);
-      },
-      (err) => {
-        setLocLoading(false);
-        if (err.code === 1) setLocError("Location permission denied. Please type your address.");
-        else setLocError("Could not get location. Please type manually.");
-      },
-      { timeout: 10000 }
-    );
+    try {
+      const result = await detectAndSaveLocation();
+      setOutOfZone(!result.inZone);
+      setDistanceKm(result.distanceKm);
+      if (result.inZone) {
+        setForm(f => ({ ...f, address: result.address }));
+        setErrors(e => ({ ...e, address: "" }));
+      }
+    } catch (err) {
+      if (err.code === 1) setLocError("Location permission denied. Please type your address.");
+      else if (err.code === 2) setLocError("Location unavailable. Please type your address.");
+      else if (err.code === 3) setLocError("Location timed out. Please try again.");
+      else setLocError("Could not get location. Please type your address.");
+    } finally {
+      setLocLoading(false);
+    }
   };
 
   /* ── Validation ── */
@@ -118,6 +110,8 @@ const Checkout = () => {
 
     if (!address) err.address = "Delivery address is required";
     else if (address.length < 10) err.address = "Please enter a complete address (min 10 chars)";
+
+    if (outOfZone) err.address = `Sorry, we only deliver within ${DELIVERY_RADIUS_KM} km of ${STORE_LOCATION.name}.`;
 
     setErrors(err);
     return Object.keys(err).length === 0;
@@ -166,10 +160,34 @@ const Checkout = () => {
 
   const timerColor = waitTimer > 30 ? "#22c55e" : waitTimer > 10 ? "#f59e0b" : "#ef4444";
 
+  const [shake, setShake] = useState(false);
+  const [validationToast, setValidationToast] = useState("");
+
+  const triggerShake = (errorObj) => {
+    // Build a short summary message
+    const msgs = Object.values(errorObj);
+    setValidationToast(msgs[0]); // show first error
+    setShake(true);
+    setTimeout(() => setShake(false), 600);
+    setTimeout(() => setValidationToast(""), 3000);
+  };
+
+  const handlePlaceOrderWithFeedback = async () => {
+    if (placing) return;
+    const valid = validate();
+    if (!valid) {
+      triggerShake(errors);
+      const firstErr = document.querySelector('[data-error="true"]');
+      if (firstErr) firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    await handlePlaceOrder();
+  };
+
   const renderButton = () => {
     if (form.payment === "cod") return (
-      <button className={styles.btn} onClick={handlePlaceOrder} disabled={placing}
-        style={{ opacity: placing ? 0.6 : 1 }}>
+      <button className={styles.btn} onClick={handlePlaceOrderWithFeedback} disabled={placing}
+        style={{ opacity: placing ? 0.6 : 1, animation: shake ? "btnShake 0.5s ease" : "none" }}>
         {placing ? "Placing Order..." : "Place Order"}
       </button>
     );
@@ -184,8 +202,8 @@ const Checkout = () => {
       </button>
     );
     if (onlineStatus === "verified") return (
-      <button className={styles.btn} onClick={handlePlaceOrder} disabled={placing}
-        style={{ background: "#22c55e", opacity: placing ? 0.6 : 1 }}>
+      <button className={styles.btn} onClick={handlePlaceOrderWithFeedback} disabled={placing}
+        style={{ background: "#22c55e", opacity: placing ? 0.6 : 1, animation: shake ? "btnShake 0.5s ease" : "none" }}>
         {placing ? "Placing Order..." : "✅ Payment Verified — Place Order"}
       </button>
     );
@@ -215,6 +233,7 @@ const Checkout = () => {
                 <div style={inputWrap}>
                   <FiUser style={inputIcon} />
                   <input
+                    data-error={!!errors.name}
                     className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
                     style={{ paddingLeft: 38 }}
                     placeholder="Rahul Sharma"
@@ -304,10 +323,34 @@ const Checkout = () => {
                   </span>
                 )}
                 {errors.address && <span className={styles.error}>{errors.address}</span>}
-                {!errors.address && form.address.length > 0 && (
+                {!errors.address && !outOfZone && form.address.length > 0 && (
                   <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 600 }}>
                     ✓ Address looks good
                   </span>
+                )}
+
+                {/* ── OUT OF ZONE BANNER ── */}
+                {outOfZone && (
+                  <div style={{
+                    marginTop: 10, padding: "14px 16px",
+                    background: "#fef2f2", border: "1.5px solid #fecaca",
+                    borderRadius: 12, fontFamily: "'Outfit', sans-serif",
+                  }}>
+                    <p style={{ fontSize: 14, fontWeight: 800, color: "#dc2626", margin: "0 0 4px", display: "flex", alignItems: "center", gap: 6 }}>
+                      🚫 Outside Delivery Zone
+                    </p>
+                    <p style={{ fontSize: 13, color: "#7f1d1d", margin: "0 0 8px", lineHeight: 1.5 }}>
+                      You're <strong>{distanceKm} km</strong> away. We currently deliver within <strong>{DELIVERY_RADIUS_KM} km</strong> of {STORE_LOCATION.name}.
+                    </p>
+                    <p style={{ fontSize: 12, color: "#b91c1c", margin: 0 }}>
+                      📞 Call us to check if we can arrange delivery: <strong>+91 9101038129</strong>
+                    </p>
+                    <button
+                      onClick={() => { setOutOfZone(false); setDistanceKm(null); setForm(f => ({ ...f, address: "" })); }}
+                      style={{ marginTop: 10, fontSize: 12, fontWeight: 700, color: "#dc2626", background: "none", border: "1px solid #fca5a5", borderRadius: 8, padding: "5px 12px", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                      Enter address manually
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -481,6 +524,39 @@ const Checkout = () => {
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes btnShake {
+          0%,100% { transform: translateX(0); }
+          15%      { transform: translateX(-8px); }
+          30%      { transform: translateX(8px); }
+          45%      { transform: translateX(-6px); }
+          60%      { transform: translateX(6px); }
+          75%      { transform: translateX(-3px); }
+          90%      { transform: translateX(3px); }
+        }
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateY(12px) scale(0.95); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
+
+      {/* Validation toast */}
+      {validationToast && (
+        <div style={{
+          position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)",
+          background: "#1e293b", color: "#fff",
+          padding: "12px 20px", borderRadius: 14,
+          fontSize: 13, fontWeight: 600, fontFamily: "'Outfit', sans-serif",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+          zIndex: 99999, whiteSpace: "nowrap",
+          animation: "toastIn 0.3s ease",
+          display: "flex", alignItems: "center", gap: 8,
+          borderLeft: "4px solid #ef4444",
+        }}>
+          ⚠️ {validationToast}
+        </div>
+      )}
     </div>
   );
 };
